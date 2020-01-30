@@ -129,7 +129,7 @@ public class Classifier {
         System.out.println(pol.evaluateTweet(text));
 
         //TODO why this is neg ?!?!?!
-        text = "I am happy happy !!!!!!!!! ";
+        text = "I am sad!!!! lol hahahaha ";
         System.out.println(text);
         System.out.println(pol.evaluateTweet(text));
 
