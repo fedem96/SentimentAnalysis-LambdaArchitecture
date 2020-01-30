@@ -49,11 +49,18 @@ public class Classifier {
             trainedClassifier.handle(classified);
         }
         bufferedReader.close();
+        // trainedClassifier.compileTo((ObjectOutput) mClassifier); // TODO make the classifier evaluable after training
     }
 
     public void save(String outputPath) throws IOException {
+        File fileOutput = new File(outputPath);
+        if(!fileOutput.exists())
+        {
+            fileOutput.createNewFile();
+        }
+
         // save the local classifier
-        FileOutputStream fout = new FileOutputStream(outputPath + "classifier_weights.lpc");
+        FileOutputStream fout = new FileOutputStream(outputPath);
         ObjectOutputStream oos = new ObjectOutputStream(fout);
         trainedClassifier.compileTo(oos);
         oos.close();
@@ -71,14 +78,14 @@ public class Classifier {
         while((line = bufferedReader.readLine()) != null) {
             numTests += 1;
             System.out.print("Num of test: " + numTests +" \r");
-            String[] element = line.split(",", 2);
+            String[] element = line.split(",");
             if(element[0].contains("0")) {
                 categ = "neg";
             }else{
                 categ = "pos";
             }
 
-            if(evaluateTweet(element[0]).equals(categ))
+            if(evaluateTweet(element[5]).equals(categ))
                 numCorrect += 1;
         }
 
@@ -86,8 +93,7 @@ public class Classifier {
         // ling pipe example code
         System.out.println("  # Test Cases=" + numTests);
         System.out.println("  # Correct=" + numCorrect);
-        System.out.println("  % Correct="
-                + ((double)numCorrect)/(double)numTests);
+        System.out.println("  % Correct=" + ((double)numCorrect)/(double)numTests);
     }
 
 
@@ -97,41 +103,45 @@ public class Classifier {
     }
 
 
-    // args[0] = path of dataset for training
-    // args[1] = path for save classifier weights
-    /*  my case
-        /home/iacopo/Scrivania/SentimentAnalysis-LambdaArchitecture/dataset/training.1600000.processed.noemoticon.csv
-        /home/iacopo/Scrivania/SentimentAnalysis-LambdaArchitecture/dataset/
-     */
+    // args[0] = dataset file
+    // args[1] = file in which save the classifier
     public static void main(String args[]) throws IOException, ClassNotFoundException {
-        // create the classifier and save weights
-        File file = new File(args[1]+"classifier_weights.lpc");
-        if (!file.exists())
-        {
-            Classifier classifier = new Classifier();
+
+        if(args.length < 2) {
+            System.out.println("Not enough arguments");
+            return;
+        }
+
+        Classifier classifier;
+        File classifierFile = new File(args[1]);
+        if (!classifierFile.exists())
+        {   // create and save the classifier
+            classifier = new Classifier();
             classifier.train(args[0]);
-            // SMALLER DATASET
-            //classifier.train("/home/iacopo/Scrivania/SentimentAnalysis-LambdaArchitecture/dataset/small.csv");
             classifier.save(args[1]);
+            return; // TODO remove this return
+        }
+        else
+        {   // load the classifier
+            classifier = new Classifier(args[1]);
         }
 
         // evaluation debug
-        // TODO accuracy 100% on train dataset ok but make some test whit a smaller train dataset
-        Classifier c = new Classifier(args[1]+"classifier_weights.lpc");
-        c.evaluate(args[0]);
-        //c.evaluate("/home/iacopo/Scrivania/SentimentAnalysis-LambdaArchitecture/dataset/small.csv");
-
+        classifier.evaluate(args[0]);
 
         // real positive tweet in the dataset
         String text = "I LOVE @Health4UandPets u guys r the best!! ";
-        Classifier pol = new Classifier(args[1]+"classifier_weights.lpc");
         System.out.println(text);
-        System.out.println(pol.evaluateTweet(text));
+        System.out.println(classifier.evaluateTweet(text));
 
         //TODO why this is neg ?!?!?!
         text = "I am sad!!!! lol hahahaha ";
         System.out.println(text);
-        System.out.println(pol.evaluateTweet(text));
+        System.out.println(classifier.evaluateTweet(text));
+
+        text = "I am so sad.";
+        System.out.println(text);
+        System.out.println(classifier.evaluateTweet(text));
 
 
     }
