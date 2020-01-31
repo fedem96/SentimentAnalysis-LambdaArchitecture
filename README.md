@@ -3,6 +3,6 @@
 
 ## Software requirements
 * Java JDK
-* Hadoop 2.9.2
+* BatchLayer 2.9.2
 
 ...
