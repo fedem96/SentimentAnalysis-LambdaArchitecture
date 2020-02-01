@@ -1,25 +1,46 @@
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IOUtils;
+import batch.BatchLayer;
+import generate.Generator;
 import org.apache.hadoop.conf.Configuration;
-import java.io.InputStream;
-import java.net.URI;
-
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.Job;
 
 public class Main {
 
     public static void main(String[] args) throws Exception{
-        String uri = args[0];
-        Configuration conf = new Configuration();
-        org.apache.hadoop.fs.FileSystem fs = org.apache.hadoop.fs.FileSystem.get(URI.create(uri), conf);
-        InputStream in = null;
 
-        try{
-            in = fs.open(new Path(uri));
-            IOUtils.copyBytes(in, System.out, 4096, false);
+        if(args.length <= 0){
+            System.err.println("Error: not enough args");
+            return;
         }
-        finally {
-            IOUtils.closeStream(in);
-        }
+
+        final String datasetPath = args[0];
+        final String batchInputPath = "/batch/input";
+        final String speedInputPath = "/speed/input";
+        final String batchOutputPath = "/batch/output";
+        final String speedOutputPath = "/speed/output";
+
+        Configuration conf = new Configuration();
+        FileSystem fs = FileSystem.get(conf);
+
+        // delete dirs
+        for(String path : new String[]{batchInputPath, speedInputPath, batchOutputPath, speedOutputPath})
+            if (fs.exists(new Path(path)))  // TODO fix: exists is always false
+                fs.delete(new Path(path), true);
+
+        // create and start Generator thread
+        new Generator("hdfs://localhost:9000", datasetPath, batchInputPath, speedInputPath).start();
+
+        // create and start Batch Layer
+        Job batchLayer = new BatchLayer(conf, "BatchTwitterSentimentAnalysis", batchInputPath, batchOutputPath);
+        batchLayer.setJarByClass(Main.class); // TODO check if correct
+        batchLayer.waitForCompletion(true);
+
+        // create and start Speed Layer
+        // TODO implement
+
+        // create and start Serving Layer
+        // TODO implement
     }
 
 }

@@ -1,4 +1,4 @@
-package Classifier;
+package classify;
 
 import com.aliasi.stats.MultivariateEstimator;
 import com.aliasi.classify.*;
@@ -142,8 +142,6 @@ public class Classifier {
         text = "I am so sad.";
         System.out.println(text);
         System.out.println(classifier.evaluateTweet(text));
-
-
     }
 
 }
