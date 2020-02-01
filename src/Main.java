@@ -19,17 +19,21 @@ public class Main {
         final String speedInputPath = "/speed/input";
         final String batchOutputPath = "/batch/output";
         final String speedOutputPath = "/speed/output";
+        final String hdfsURI = "hdfs://localhost:9000";
 
         Configuration conf = new Configuration();
+        conf.set("fs.defaultFS", hdfsURI);
         FileSystem fs = FileSystem.get(conf);
 
         // delete dirs
         for(String path : new String[]{batchInputPath, speedInputPath, batchOutputPath, speedOutputPath})
-            if (fs.exists(new Path(path)))  // TODO fix: exists is always false
+            if (fs.exists(new Path(path)))
                 fs.delete(new Path(path), true);
 
         // create and start Generator thread
-        new Generator("hdfs://localhost:9000", datasetPath, batchInputPath, speedInputPath).start();
+        new Generator(conf.get("fs.defaultFS"), datasetPath, batchInputPath, speedInputPath).start();
+
+        Thread.sleep(5000);
 
         // create and start Batch Layer
         Job batchLayer = new BatchLayer(conf, "BatchTwitterSentimentAnalysis", batchInputPath, batchOutputPath);
