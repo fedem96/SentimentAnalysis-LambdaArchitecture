@@ -1,6 +1,7 @@
 package batch;
 
 
+import classify.Classifier;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -11,6 +12,8 @@ import java.io.IOException;
 //TODO see how use hbase ?!
 public class Map extends Mapper<Object, Text, Text, IntWritable> {
 
+    private Classifier classifier;
+    
     @Override
     protected void map(Object key, Text value, Context context) throws IOException, InterruptedException {
         //String content = value.toString();
