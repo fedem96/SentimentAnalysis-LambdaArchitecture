@@ -11,35 +11,35 @@ import java.io.IOException;
 //TODO see how use hbase ?!
 public class Map extends Mapper<Object, Text, Text, IntWritable> {
 
-//    //TODO INIZIALIZE
-//    Map(classify c){
-//        //TODO declare the classification model
-//        //classify c = new classify(classifierPath);
-//    }
+    @Override
+    protected void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+        //String content = value.toString();
+        //System.out.println("content: " + content);
 
-        @Override
-        protected void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-            String content = value.toString();
-            System.out.println("content: " + content);
+        String values[] = value.toString().split(",",2);
+        String timestamp = values[0];
+        //FIXME chose the correct timestamp
+        timestamp = values[0].substring(0,12) + values[0].substring(25,30);
+        String tweet = values[1];
 
-            // some random write, TODO: remove
-            context.write(new Text("ciao"), new IntWritable((int)(Math.random()*2)));
-            context.write(new Text("hello"), new IntWritable((int)(Math.random()*2)));
-            context.write(new Text("world"), new IntWritable((int)(Math.random()*2)));
-
-            // TODO implement
-//            String timestampKey = ...;
-//            per ogni tweet nel csv {
-//                int sentiment = getSentiment(tweet);
-//                context.write(timestampKey, sentiment);
-//            }
+        // args[*****]
+        try {
+            classifier = new Classifier("/home/iacopo/Scrivania/SentimentAnalysis-LambdaArchitecture/dataset/classifier_weights.lpc");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
 
-//    public static boolean evalTweet(String text, String query){
-//       //TODO use the classificator ?!
-//
-//    }
+        int sentiment;
+        // System.out.println(classifier.evaluateTweet(tweet));
+        if(classifier.evaluateTweet(tweet).equals("neg")){
+            sentiment = 0;
+        }else{
+            sentiment = 4;
+        }
+
+        context.write(new Text(timestamp), new IntWritable(sentiment));
 
 
+    }
 
 }
