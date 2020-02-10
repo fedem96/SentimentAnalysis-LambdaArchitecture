@@ -31,9 +31,12 @@ public class Main {
                 fs.delete(new Path(path), true);
 
         // create and start Generator thread
-        new Generator(conf.get("fs.defaultFS"), datasetPath, batchInputPath, speedInputPath).start();
+        Generator g = new Generator(conf.get("fs.defaultFS"), datasetPath, batchInputPath, speedInputPath);
+        g.start();
 
         Thread.sleep(5000);
+        g.interrupt();
+        Thread.sleep(200);
 
         // create and start Batch Layer
         Job batchLayer = new BatchLayer(conf, "BatchTwitterSentimentAnalysis", batchInputPath, batchOutputPath);

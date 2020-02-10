@@ -21,8 +21,8 @@ public class Generator extends Thread{
 
     public Generator(String hdfsURI, String csvPath, String batchInputPath, String speedInputPath) throws IOException {
         this.csvPath = csvPath;
-        this.toBatchSender = new Sender(hdfsURI, batchInputPath, 10 * 60 * 1000, 5 * 1024);
-        this.toSpeedSender = new Sender(hdfsURI, speedInputPath, 60 * 1000, 1024);
+        this.toBatchSender = new Sender(hdfsURI, batchInputPath, 10 * 60 * 1000, 2 * 1024 * 1024);
+        this.toSpeedSender = new Sender(hdfsURI, speedInputPath, 60 * 1000, 1024 * 1024);
         System.out.println("Generator created");
     }
 
@@ -57,18 +57,27 @@ public class Generator extends Thread{
 
         // send tweets to Batch and Speed Layers
         try {
-            int count = 0;
-            for (String[] line : lines) {
-                toBatchSender.send(line[2], line[5]);
-                toSpeedSender.send(line[2], line[5]);
-                System.out.println("" + count++ + " lines sent");
-                Thread.sleep((long) (Math.random() * 3));
+            try {
+//            int count = 0;
+                for (String[] line : lines) {
+                    toBatchSender.send(line[2], line[5]);
+                    toSpeedSender.send(line[2], line[5]);
+//                System.out.println("" + count++ + " lines sent");
+                    Thread.sleep((long) (Math.random() * 3));
+                }
+                toBatchSender.flush();
+                toSpeedSender.flush();
+            } catch (IOException ioe) {
+                System.err.println("Error: IOException");
+            } catch (InterruptedException e) {
+                System.err.println("Error: InterruptedException");
+            } finally {
+                toBatchSender.flush();
+                toSpeedSender.flush();
             }
         }
         catch (IOException ioe){
-            System.err.println("Error: IOException");
-        } catch (InterruptedException e) {
-            System.err.println("Error: InterruptedException");
+            System.err.println("Error: IOException during flush");
         }
 
     }
@@ -106,7 +115,7 @@ public class Generator extends Thread{
         }
 
         public void send(String timestamp, String tweet) throws IOException {
-            System.out.println("Sending");
+//            System.out.println("Sending");
             long curTime = currentTimeMillis();
 
             String strOutput = timestamp + "," + tweet + "\n";
@@ -114,11 +123,16 @@ public class Generator extends Thread{
             curFileDim += strOutput.length() * 2;
 
             if (curTime-lastTime > maxDeltaTime || curFileDim > maxFileDim){
-                bw.close();
-                curFileDim = 0;
                 lastTime = curTime;
-                bw = getNewBufferedWriter();
+                this.flush();
             }
+        }
+
+        public void flush() throws IOException {
+            bw.flush();
+            bw.close();
+            curFileDim = 0;
+            bw = getNewBufferedWriter();
         }
 
     }
