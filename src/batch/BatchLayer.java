@@ -1,6 +1,7 @@
 package batch;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -8,25 +9,14 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import types.IntPair;
+import utils.Globals;
 
 import java.io.IOException;
 
-public class BatchLayer extends Job {
+import static utils.Globals.batchInputPath;
+import static utils.Globals.batchOutputPath;
 
-//    //TODO here make the executable that uses map and reduce
-//    public int run(String[] args) throws Exception {
-//
-//
-//        boolean success = job.waitForCompletion(true);
-//        return success ? 0 : 1;
-//    }
-//
-//
-//    public static void main(String[] args) throws Exception {
-//        int res = ToolRunner.run(new Configuration(), new Map(), args);
-//        System.exit(res);
-//    }
+public class BatchLayer extends Job {
 
 
     public BatchLayer(Configuration conf, String jobName, String batchInputPath, String batchOutputPath) throws IOException {
@@ -39,10 +29,28 @@ public class BatchLayer extends Job {
         this.setMapOutputValueClass(IntWritable.class);  // sentiment
 
         this.setOutputKeyClass(Text.class);              // timestamp
-        this.setOutputValueClass(IntPair.class);         // <numGoodSentiments, numBadSentiments>
+        this.setOutputValueClass(Text.class);         // <numGoodSentiments, numBadSentiments>
 
         FileInputFormat.addInputPath(this, new Path(batchInputPath));
         FileOutputFormat.setOutputPath(this, new Path(batchOutputPath));
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
+    }
+
+    public static void main(String args[]) throws InterruptedException, IOException, ClassNotFoundException {
+
+        // create configuration
+        Configuration conf = new Configuration();
+        conf.set("fs.defaultFS", Globals.hdfsURI);
+        FileSystem fs = FileSystem.get(conf);
+
+        // delete old dirs
+        for(String path : new String[]{batchInputPath, batchOutputPath})
+            if (fs.exists(new Path(path)))
+                fs.delete(new Path(path), true);
+
+        // create and start Batch Layer
+        Job batchLayer = new BatchLayer(conf, "BatchTwitterSentimentAnalysis", Globals.batchInputPath, Globals.batchOutputPath);
+        batchLayer.setJarByClass(BatchLayer.class);
+        batchLayer.waitForCompletion(true);
     }
 }

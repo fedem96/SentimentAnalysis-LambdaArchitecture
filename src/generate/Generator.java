@@ -3,6 +3,7 @@ package generate;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import utils.Globals;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -135,6 +136,23 @@ public class Generator extends Thread{
             bw = getNewBufferedWriter();
         }
 
+    }
+
+    public static void main(String args[]) throws IOException { // args[0]: dataset
+
+        if(args.length <= 0){ // if dataset is not specified
+            System.err.println("Error: not enough args");
+            return;
+        }
+
+        // create configuration
+        Configuration conf = new Configuration();
+        conf.set("fs.defaultFS", Globals.hdfsURI);
+        FileSystem fs = FileSystem.get(conf);
+
+        // create and start Generator thread
+        Generator g = new Generator(conf.get("fs.defaultFS"), args[0], Globals.batchInputPath, Globals.speedInputPath);
+        g.start();
     }
 
 
