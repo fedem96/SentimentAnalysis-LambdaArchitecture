@@ -13,9 +13,6 @@ import utils.Globals;
 
 import java.io.IOException;
 
-import static utils.Globals.batchInputPath;
-import static utils.Globals.batchOutputPath;
-
 public class BatchLayer extends Job {
 
 
@@ -43,10 +40,9 @@ public class BatchLayer extends Job {
         conf.set("fs.defaultFS", Globals.hdfsURI);
         FileSystem fs = FileSystem.get(conf);
 
-        // delete old dirs
-        for(String path : new String[]{batchInputPath, batchOutputPath})
-            if (fs.exists(new Path(path)))
-                fs.delete(new Path(path), true);
+        // clear output dir
+        if (fs.exists(new Path(Globals.batchOutputPath)))
+            fs.delete(new Path(Globals.batchOutputPath), true);
 
         // create and start Batch Layer
         Job batchLayer = new BatchLayer(conf, "BatchTwitterSentimentAnalysis", Globals.batchInputPath, Globals.batchOutputPath);
