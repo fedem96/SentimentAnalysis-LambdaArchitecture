@@ -19,7 +19,7 @@ public class SpeedLayer {
         builder.setSpout("fileReaderSpout", fileReaderSpout, 4);
 
 
-        builder.setBolt("bolt", new Bolt(), 4).fieldsGrouping("sentimentBolt", new Fields("timestamp","sentiment"));
+        builder.setBolt("bolt", new Bolt(), 4).fieldsGrouping("fileReaderSpout", new Fields("timestamp"));
 
         LocalCluster cluster = new LocalCluster();
 
