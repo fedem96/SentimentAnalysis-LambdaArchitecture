@@ -22,8 +22,8 @@ public class Generator extends Thread{
 
     public Generator(String hdfsURI, String csvPath, String batchInputPath, String speedInputPath) throws IOException {
         this.csvPath = csvPath;
-        this.toBatchSender = new Sender(hdfsURI, batchInputPath, 10 * 60 * 1000, 2 * 1024 * 1024);
-        this.toSpeedSender = new Sender(hdfsURI, speedInputPath, 60 * 1000, 1024 * 1024);
+        this.toBatchSender = new Sender(hdfsURI, batchInputPath, 10 * 60 * 1000, 5 * 1024);
+        this.toSpeedSender = new Sender(hdfsURI, speedInputPath, 60 * 1000, 1024);
         System.out.println("Generator created");
     }
 
@@ -52,7 +52,6 @@ public class Generator extends Thread{
             System.err.println("Error while reading CSV input file");
             return;
         }
-
         // shuffle tweets
         Collections.shuffle(lines);
 
@@ -116,7 +115,7 @@ public class Generator extends Thread{
         }
 
         public void send(String timestamp, String tweet) throws IOException {
-//            System.out.println("Sending");
+            System.out.println("Sending");
             long curTime = currentTimeMillis();
 
             String strOutput = timestamp + "," + tweet + "\n";
@@ -148,7 +147,6 @@ public class Generator extends Thread{
         // create configuration
         Configuration conf = new Configuration();
         conf.set("fs.defaultFS", Globals.hdfsURI);
-        FileSystem fs = FileSystem.get(conf);
 
         // create and start Generator thread
         Generator g = new Generator(conf.get("fs.defaultFS"), args[0], Globals.batchInputPath, Globals.speedInputPath);
