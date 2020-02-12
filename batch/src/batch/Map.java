@@ -22,6 +22,14 @@ public class Map extends Mapper<Object, Text, Text, IntWritable> {
         System.out.println("MAPPER, key " + key.toString() + "value "+ value.toString());
 
         String values[] = value.toString().split(",",2);
+        if(values.length != 2){
+            System.err.println("Invalid line");
+            return;
+        }
+        if(values[0].length() < 25){
+            System.err.println("Timestamp too short");
+            return;
+        }
         String timestamp = values[0].substring(0,12) + values[0].substring(25,30);
         //FIXME chose the correct timestamp
         String tweet = values[1];
