@@ -12,7 +12,7 @@ import org.apache.storm.tuple.Values;
 import java.util.Map;
 
 //TODO bolt
-class classifierBolt extends BaseBasicBolt {
+class ClassifierBolt extends BaseBasicBolt {
 
     Classifier classifier;
     private String value;

@@ -11,4 +11,5 @@ public class Globals {
 
     public static final String hdfsURI = "hdfs://localhost:9000";
 
+    public static String badFiles = "/speed/badFiles";
 }

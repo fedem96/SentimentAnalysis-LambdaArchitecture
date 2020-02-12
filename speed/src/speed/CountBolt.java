@@ -8,7 +8,7 @@ import org.apache.storm.tuple.Tuple;
 
 import java.util.Map;
 
-public class countBolt extends BaseRichBolt {
+public class CountBolt extends BaseRichBolt {
     @Override
     public void prepare(Map<String, Object> map, TopologyContext topologyContext, OutputCollector outputCollector) {
 

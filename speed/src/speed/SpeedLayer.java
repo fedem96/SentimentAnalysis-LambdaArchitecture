@@ -34,10 +34,10 @@ public class SpeedLayer {
         builder.setSpout("fileReaderSpout", fileReaderSpout, 4);
 
         // get the "line" from tuple.get(0).toString() --> split and classify tweet
-        builder.setBolt("classifierBolt", new classifierBolt(), 4).fieldsGrouping("fileReaderSpout", new Fields("line")).shuffleGrouping("fileReaderSpout");
+        builder.setBolt("ClassifierBolt", new ClassifierBolt(), 4).fieldsGrouping("fileReaderSpout", new Fields("line")).shuffleGrouping("fileReaderSpout");
 
         // group by timestamp the tweet and count the sentiment
-        builder.setBolt("countBolt", new countBolt(), 4).fieldsGrouping("classifierBolt", new Fields("timestamp"));
+        builder.setBolt("CountBolt", new CountBolt(), 4).fieldsGrouping("ClassifierBolt", new Fields("timestamp"));
 
         LocalCluster cluster = new LocalCluster();
 
