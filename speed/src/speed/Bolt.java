@@ -15,8 +15,10 @@ import java.util.Map;
 class Bolt extends BaseBasicBolt {
 
     Classifier classifier;
+    private String value;
 
     public void prepare(Map conf, TopologyContext context){
+        value = (String) conf.get("timestamp");
     }
 
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
@@ -24,7 +26,7 @@ class Bolt extends BaseBasicBolt {
     }
 
     public void execute(Tuple tuple, BasicOutputCollector collector) {
-
+        System.out.println(tuple);
         int numGoodSentiments = 0;
         int numBadSentiments = 0;
         int total=0;
@@ -40,7 +42,7 @@ class Bolt extends BaseBasicBolt {
         String timestamp = tuple.getString(0);
         String sentiment = new String(numGoodSentiments + "," + numBadSentiments);
 
-        collector.emit( new Values(timestamp, sentiment ));
+        collector.emit( new Values(timestamp, sentiment));
 
         System.out.println("BOLT  good:"+numGoodSentiments+", bad:"+numBadSentiments+", total:" + total);
     }
