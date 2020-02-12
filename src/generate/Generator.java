@@ -35,6 +35,8 @@ public class Generator extends Thread{
         String row;
         while ((row = csvReader.readLine()) != null) {
             String[] data = row.split(sep, 6);
+            for(int i = 0; i < data.length; i++)
+                data[i] = data[i].substring(1, data[i].length()-1);
             lines.add(data);
         }
         csvReader.close();
