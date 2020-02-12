@@ -30,10 +30,14 @@ public class SpeedLayer {
                 .setSourceDir(Globals.speedInputPath)              // reqd
                 .setArchiveDir(Globals.speedOutputPath).setBadFilesDir(Globals.badFiles);     // required
 
+        // read the hdfs file and pass to the classifier bolt
         builder.setSpout("fileReaderSpout", fileReaderSpout, 4);
 
+        // get the "line" from tuple.get(0).toString() --> split and classify tweet
+        builder.setBolt("classifierBolt", new classifierBolt(), 4).fieldsGrouping("fileReaderSpout", new Fields("line")).shuffleGrouping("fileReaderSpout");
 
-        builder.setBolt("bolt", new Bolt(), 4).fieldsGrouping("fileReaderSpout", new Fields("line"));
+        // group by timestamp the tweet and count the sentiment
+        builder.setBolt("countBolt", new countBolt(), 4).fieldsGrouping("classifierBolt", new Fields("timestamp"));
 
         LocalCluster cluster = new LocalCluster();
 
