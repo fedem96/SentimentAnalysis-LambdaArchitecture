@@ -63,7 +63,7 @@ public class CountBolt extends BaseRichBolt {
         String output = positive + "," + negative;
 
         try {
-            outputStream.writeBytes(String.valueOf(output.getBytes()));
+            outputStream.writeChars(output);
         } catch (IOException e) {
             e.printStackTrace();
         }
