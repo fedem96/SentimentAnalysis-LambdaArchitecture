@@ -1,8 +1,8 @@
 package query;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import utils.Globals;
@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class Query {
+
 
     public static void main(String args[]) throws IOException, ParseException {
         if(args.length == 0){
@@ -38,9 +39,9 @@ public class Query {
             int numGood = nums[0];
             int numBad = nums[1];
 
-//            nums = querySpeed();
-//            numGood += nums[0];
-//            numBad += nums[1];
+            nums = querySpeed(queryDate, queryDate, dateFormat, fs);
+            numGood += nums[0];
+            numBad += nums[1];
 
             System.out.println("Num good tweets on " + dateFormat.format(queryDate) + ": " + numGood);
             System.out.println("Num bad tweets on " + dateFormat.format(queryDate) + ": " + numBad);
@@ -54,9 +55,9 @@ public class Query {
             int numGood = nums[0];
             int numBad = nums[1];
 
-//            nums = querySpeed();
-//            numGood += nums[0];
-//            numBad += nums[1];
+            nums = querySpeed(beginDate, endDate, dateFormat, fs);
+            numGood += nums[0];
+            numBad += nums[1];
 
             System.out.println("Num good tweets between " + dateFormat.format(beginDate) + " and " + dateFormat.format(endDate)  + " (included): " + numGood);
             System.out.println("Num bad tweets between " + dateFormat.format(beginDate) + " and " + dateFormat.format(endDate)  + " (included): " + numBad);
@@ -86,6 +87,37 @@ public class Query {
         return nums;
     }
 
+    public static int[] querySpeed(Date beginDate, Date endDate, DateFormat dateFormat , FileSystem fs) throws IOException, ParseException {
 
+        int[] nums = new int[2];
+        int numGood = 0;
+        int numBad = 0;
+
+        RemoteIterator<LocatedFileStatus> fileStatusListIterator = fs.listFiles(new Path(Globals.speedOutputPath), true);
+
+        while(fileStatusListIterator.hasNext()){
+            LocatedFileStatus fileStatus = fileStatusListIterator.next();
+            String fileName = fileStatus.getPath().getName();
+            // System.out.println(fileName);
+            //do stuff with the file like ...
+            Date tweetDate = dateFormat.parse(fileName);
+            if((!beginDate.after(tweetDate) && !endDate.before(tweetDate))){
+
+                FSDataInputStream in = fs.open(fileStatus.getPath());
+                String line = IOUtils.toString(in, "UTF-16");
+                // System.out.println(line);
+                in.close();
+
+                String counts[] = line.split(",");
+                numGood += Integer.parseInt(counts[0]);
+                numBad += Integer.parseInt(counts[1]);
+            }
+
+        }
+
+        nums[0] = numGood;
+        nums[1] = numBad;
+        return nums;
+    }
 
 }
