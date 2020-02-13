@@ -17,11 +17,24 @@ import java.util.Map;
 public class CountBolt extends BaseRichBolt {
     private int positive;
     private int negative;
+    private FileSystem fs;
+    private OutputCollector collector;
 
     @Override
     public void prepare(Map<String, Object> map, TopologyContext topologyContext, OutputCollector outputCollector) {
         negative = 0;
         positive = 0;
+        collector = outputCollector;
+
+        Configuration conf = new Configuration();
+        // Set FileSystem URI
+        conf.set("fs.defaultFS", Globals.hdfsURI);
+        fs = null;
+        try {
+            fs = FileSystem.get(conf);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -38,18 +51,6 @@ public class CountBolt extends BaseRichBolt {
 
         System.out.println("BOLT COUNT timestamp: " + timestamp + ", positive: " + positive + ", negative: " + negative);
 
-
-        // =====================================
-        Configuration conf = new Configuration();
-        // Set FileSystem URI
-        conf.set("fs.defaultFS", Globals.hdfsURI);
-        FileSystem fs = null;
-        try {
-            fs = FileSystem.get(conf);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         //Create a path
         Path hdfswritepath = new Path(Globals.speedOutputPath + "/" + timestamp + ".txt");
         //Init output stream
@@ -58,51 +59,25 @@ public class CountBolt extends BaseRichBolt {
             outputStream = fs.create(hdfswritepath);
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
-        //Cassical output stream usage
+        //Classical output stream usage
         String output = positive + "," + negative;
 
         try {
             outputStream.writeChars(output);
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
         try {
             outputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        //logger.info("End Write file into hdfs");
-
-        /*
-        File file = new File( "/home/iacopo/Scrivania/FILES/" + timestamp + ".txt");
-        // if file doesnt exists, then create it
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            return;
         }
 
-        FileWriter fw = null;
-        try {
-            fw = new FileWriter(file.getAbsoluteFile());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        BufferedWriter bw = new BufferedWriter(fw);
-        try {
-            bw.write(positive + "," + negative);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            bw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        */
+        collector.ack(tuple);
 
     }
 

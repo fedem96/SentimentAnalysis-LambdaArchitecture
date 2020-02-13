@@ -42,17 +42,20 @@ class ClassifierBolt extends BaseBasicBolt {
             timestamp = newDateFormat.format(dateFormat.parse(timestamp));
         } catch (ParseException e) {
             e.printStackTrace();
+            return;
         }
 
         String tweet = values[1];
 
         try {
             //FIXME set path with args?!
-            classifier = new Classifier("/home/iacopo/Scrivania/Sentiment/dataset/classifier_weights.lpc");
+            classifier = new Classifier("dataset/classifier_weights.lpc");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
+            return;
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
 
         int sentiment;
