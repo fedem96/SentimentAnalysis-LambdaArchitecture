@@ -35,32 +35,32 @@ public class Query {
             Date queryDate = dateFormat.parse(args[0]);
 
 
-            int nums[] = queryBatch(queryDate, queryDate, dateFormat, fs, conf);
-            int numGood = nums[0];
-            int numBad = nums[1];
+            int[] batchNums = queryBatch(queryDate, queryDate, dateFormat, fs, conf);
+            int numGood = batchNums[0];
+            int numBad = batchNums[1];
 
-            nums = querySpeed(queryDate, queryDate, dateFormat, fs);
-            numGood += nums[0];
-            numBad += nums[1];
+            int[] speedNums = querySpeed(queryDate, queryDate, dateFormat, fs);
+            numGood += speedNums[0];
+            numBad += speedNums[1];
 
-            System.out.println("Num good tweets on " + dateFormat.format(queryDate) + ": " + numGood);
-            System.out.println("Num bad tweets on " + dateFormat.format(queryDate) + ": " + numBad);
+            System.out.println("Num good tweets on " + dateFormat.format(queryDate) + ": " + numGood + " (" + batchNums[0] +" from batch, " + speedNums[0] + " from speed)");
+            System.out.println("Num bad tweets on " + dateFormat.format(queryDate) + ": " + numBad + " (" + batchNums[1] +" from batch, " + speedNums[1] + " from speed)");
 
 
         } else { // dates interval
             Date beginDate = dateFormat.parse(args[0]);
             Date endDate = dateFormat.parse(args[1]);
 
-            int nums[] = queryBatch(beginDate, endDate, dateFormat, fs, conf);
-            int numGood = nums[0];
-            int numBad = nums[1];
+            int batchNums[] = queryBatch(beginDate, endDate, dateFormat, fs, conf);
+            int numGood = batchNums[0];
+            int numBad = batchNums[1];
 
-            nums = querySpeed(beginDate, endDate, dateFormat, fs);
-            numGood += nums[0];
-            numBad += nums[1];
+            int[] speedNums = querySpeed(beginDate, endDate, dateFormat, fs);
+            numGood += speedNums[0];
+            numBad += speedNums[1];
 
-            System.out.println("Num good tweets between " + dateFormat.format(beginDate) + " and " + dateFormat.format(endDate)  + " (included): " + numGood);
-            System.out.println("Num bad tweets between " + dateFormat.format(beginDate) + " and " + dateFormat.format(endDate)  + " (included): " + numBad);
+            System.out.println("Num good tweets between " + dateFormat.format(beginDate) + " and " + dateFormat.format(endDate)  + " (included): " + numGood + " (" + batchNums[0] +" from batch, " + speedNums[0] + " from speed)");
+            System.out.println("Num bad tweets between " + dateFormat.format(beginDate) + " and " + dateFormat.format(endDate)  + " (included): " + numBad + " (" + batchNums[1] +" from batch, " + speedNums[1] + " from speed)");
         }
 
     }

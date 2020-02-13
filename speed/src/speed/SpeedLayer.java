@@ -12,6 +12,11 @@ public class SpeedLayer {
 
     public static void main(String[] args) throws Exception {
 
+        if(args.length == 0){ // args[0]: classifier path
+            System.err.println("Error: not enough args");
+            return;
+        }
+
         TopologyBuilder builder = new TopologyBuilder();
 
         //HdfsSpout fileReaderSpout = new Spout().withOutputFields("timestamp","sentiment").setHdfsUri(Globals.hdfsURI).setSourceDir(Globals.speedInputPath).setArchiveDir(Globals.speedOutputPath).setReaderType("org.apache.storm.hdfs.spout.TextFileReader");
@@ -37,11 +42,6 @@ public class SpeedLayer {
 
         Config conf = new Config();
         conf.put("classifier_path", args[0]);
-
-        if(args.length <= 0){ // classifier path
-            System.err.println("Error: not enough args");
-            return;
-        }
 
         cluster.submitTopology("tweet-sentiment", conf, builder.createTopology());
 
