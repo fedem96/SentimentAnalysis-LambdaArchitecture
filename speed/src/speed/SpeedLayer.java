@@ -21,8 +21,8 @@ public class SpeedLayer {
                 .withOutputFields("line")
                 .setHdfsUri(Globals.hdfsURI)
                 .setSourceDir(Globals.speedInputPath)
-                .setArchiveDir(Globals.speedOutputPath)
-                .setBadFilesDir(Globals.badFiles);     // required
+                .setArchiveDir(Globals.speedArchivePath)
+                .setBadFilesDir(Globals.speedBadFiles);     // required
 
         // read the hdfs file and pass to the classifier bolt
         builder.setSpout("fileReaderSpout", fileReaderSpout, 4);

@@ -14,7 +14,8 @@ public class Clear {
         conf.set("fs.defaultFS", Globals.hdfsURI);
         FileSystem fs = FileSystem.get(conf);
 
-        for(String strPath : new String[]{Globals.batchInputPath, Globals.speedInputPath, Globals.batchOutputPath, Globals.speedOutputPath}) {
+        for(String strPath : new String[]{Globals.batchInputPath, Globals.batchOutputPath,
+                Globals.speedInputPath, Globals.speedOutputPath, Globals.speedArchivePath, Globals.speedBadFiles}) {
             Path path = new Path(strPath);
             if (fs.exists(path)) {
                 fs.delete(path, true);

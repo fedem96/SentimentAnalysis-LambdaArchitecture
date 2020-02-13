@@ -9,10 +9,10 @@ public class Globals {
 
     public static final String speedInputPath = "/speed/input";
     public static final String speedOutputPath = "/speed/output";
+    public static String speedArchivePath = "/speed/archive";
+    public static String speedBadFiles = "/speed/bad";
 
     public static final String hdfsURI = "hdfs://localhost:9000";
-
-    public static String badFiles = "/speed/badFiles";
 
     public static String datePattern = "dd-MMM-yyyy";
 }
