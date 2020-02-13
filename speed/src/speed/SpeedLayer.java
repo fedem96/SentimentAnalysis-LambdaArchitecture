@@ -16,19 +16,13 @@ public class SpeedLayer {
 
         //HdfsSpout fileReaderSpout = new Spout().withOutputFields("timestamp","sentiment").setHdfsUri(Globals.hdfsURI).setSourceDir(Globals.speedInputPath).setArchiveDir(Globals.speedOutputPath).setReaderType("org.apache.storm.hdfs.spout.TextFileReader");
 
-        /*          .withOutputFields("line")
-                .setHdfsUri(Globals.hdfsURI)  // required
-                .setSourceDir(Globals.speedInputPath)          // required
-                .setArchiveDir(Globals.speedOutputPath)
-        */
-
-        /* File that doesn't have .ignore extension will be processed */
 
         HdfsSpout fileReaderSpout = new HdfsSpout().setReaderType("text")
                 .withOutputFields("line")
-                .setHdfsUri(Globals.hdfsURI)  // reqd
-                .setSourceDir(Globals.speedInputPath)              // reqd
-                .setArchiveDir(Globals.speedOutputPath).setBadFilesDir(Globals.badFiles);     // required
+                .setHdfsUri(Globals.hdfsURI)
+                .setSourceDir(Globals.speedInputPath)
+                .setArchiveDir(Globals.speedOutputPath)
+                .setBadFilesDir(Globals.badFiles);     // required
 
         // read the hdfs file and pass to the classifier bolt
         builder.setSpout("fileReaderSpout", fileReaderSpout, 4);
