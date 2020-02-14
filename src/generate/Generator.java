@@ -7,11 +7,14 @@ import utils.Globals;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
 import static java.lang.System.currentTimeMillis;
+
+
 
 public class Generator extends Thread{
 
@@ -20,10 +23,20 @@ public class Generator extends Thread{
     private Sender toBatchSender;
     private Sender toSpeedSender;
 
+
+    // HYPERPARAMETERS FOR SIMULATE FILE DIM
+    // deltaTime = millis
+    static int maxDeltaTimeBatch = 10 * 60 * 1000;
+    static int maxDeltaTimeSpeed = 5 * 1024;
+    // fileDim = byte
+    static int maxFileDimBatch = 10 * 60 * 1000;
+    static int maxFileDimSpeed = 5 * 1024;
+
+
     public Generator(String hdfsURI, String csvPath, String batchInputPath, String speedInputPath) throws IOException {
         this.csvPath = csvPath;
-        this.toBatchSender = new Sender(hdfsURI, batchInputPath, 10 * 60 * 1000, 5 * 1024);
-        this.toSpeedSender = new Sender(hdfsURI, speedInputPath, 60 * 1000, 1024);
+        this.toBatchSender = new Sender(hdfsURI, batchInputPath, maxDeltaTimeBatch, maxFileDimBatch);
+        this.toSpeedSender = new Sender(hdfsURI, speedInputPath, maxDeltaTimeSpeed, maxFileDimSpeed);
         System.out.println("Generator created");
     }
 
@@ -55,16 +68,31 @@ public class Generator extends Thread{
             return;
         }
         // shuffle tweets
-        Collections.shuffle(lines);
+        //FIXME NO SHUFFLE
+        // Collections.shuffle(lines);
 
         // send tweets to Batch and Speed Layers
         try {
             try {
-//            int count = 0;
+            int count = 0;
                 for (String[] line : lines) {
-                    toBatchSender.send(line[2], line[5]);
-                    toSpeedSender.send(line[2], line[5]);
+                    //FIXME
+                    //Date object
+                    Date date= new Date();
+                    //getTime() returns current time in milliseconds
+                    long time = date.getTime();
+                    //Passed the milliseconds to constructor of Timestamp class
+                    String ts = new Timestamp(time).toString();
+                    toBatchSender.send(ts, line[5]);
+                    toSpeedSender.send(ts, line[5]);
+                    //here we use the timestamp of the dataset
+//                    toBatchSender.send(line[2], line[5]);
+//                    toSpeedSender.send(line[2], line[5]);
 //                System.out.println("" + count++ + " lines sent");
+                    count++;
+                    /**FIXED used for generate simple file for verify count on batch and speed*/
+//                    if(count == 1000)
+//                        return;
                     Thread.sleep((long) (Math.random() * 3));
                 }
                 toBatchSender.flush();
