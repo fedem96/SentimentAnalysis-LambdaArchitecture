@@ -12,8 +12,6 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import utils.Globals;
 
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.Date;
 
 public class BatchLayer extends Job {
 
@@ -44,6 +42,7 @@ public class BatchLayer extends Job {
 
         int outputIndex = 0;
 
+        String ts = null;
         while (true) {
             // select output path
             String outputPath = Globals.batchOutputPaths[outputIndex];
@@ -54,9 +53,9 @@ public class BatchLayer extends Job {
                 fs.delete(new Path(outputPath), true);
 
             // get timestamp and save
-            Date date = new Date();
-            long time = date.getTime(); // current time in milliseconds
-            String ts = new Timestamp(time).toString(); // create timestamp from millis
+            if(ts != null)
+                Globals.writeStringToHdfsFile(fs, ts, Globals.syncProcessedTimestamp);
+            ts = Globals.currentTimestamp();
             Globals.writeStringToHdfsFile(fs, ts, Globals.syncProgressTimestamp);
 
             // create and start Batch Layer

@@ -7,6 +7,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 
 public class Globals {
 
@@ -24,11 +26,12 @@ public class Globals {
     public static String speedBadFiles = "/speed/bad";
 
     public static final String syncPath = "/sync";
+    public static final String syncProcessedTimestamp = syncPath + "/processed_timestamp.txt";
     public static final String syncProgressTimestamp = syncPath + "/progress_timestamp.txt";
     public static final String syncLastBatchOutput = syncPath + "/last_batch_output.txt";
 
     public static void writeStringToHdfsFile(FileSystem fs, String string, String filePath) throws IOException {
-        FSDataOutputStream outputStream = fs.create(new Path(Globals.syncProgressTimestamp));
+        FSDataOutputStream outputStream = fs.create(new Path(filePath));
         outputStream.writeChars(string);
         outputStream.close();
     }
@@ -39,14 +42,17 @@ public class Globals {
         String str = null;
         try {
             is = fs.open(hdfsPath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
             str = IOUtils.toString(is, "UTF-16");
+            is.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
         return str;
+    }
+
+    public static String currentTimestamp(){
+        Date date = new Date();
+        long time = date.getTime(); // current time in milliseconds
+        return new Timestamp(time).toString(); // create timestamp from millis
     }
 }

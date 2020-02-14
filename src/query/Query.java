@@ -70,7 +70,7 @@ public class Query {
         Text val = new Text();
         int[] nums = new int[2];
 
-        String outputPath = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
+        String outputPath = Globals.readStringFromHdfsFile(fs, Globals.syncLastBatchOutput);
         RemoteIterator<LocatedFileStatus> filesIterator = fs.listFiles(new Path(outputPath), false);
         while (filesIterator.hasNext()) {
             LocatedFileStatus file = filesIterator.next();
