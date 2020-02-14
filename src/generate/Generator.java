@@ -82,7 +82,7 @@ public class Generator extends Thread{
                     //getTime() returns current time in milliseconds
                     long time = date.getTime();
                     //Passed the milliseconds to constructor of Timestamp class
-                    String ts = new Timestamp(time).toString();
+                    String ts = new Timestamp(time).toString().replace(" ", "_");
                     toBatchSender.send(ts, line[5]);
                     toSpeedSender.send(ts, line[5]);
                     //here we use the timestamp of the dataset

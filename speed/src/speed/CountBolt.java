@@ -16,6 +16,7 @@ public class CountBolt extends BaseBasicBolt {
     private int positive;
     private int negative;
     private FileSystem fs;
+    private String previousTimestamp;
     private String inProgressTimestamp;
 
     @Override
@@ -27,13 +28,9 @@ public class CountBolt extends BaseBasicBolt {
         // Set FileSystem URI
         conf.set("fs.defaultFS", Globals.hdfsURI);
         fs = null;
+        previousTimestamp = "";
         try {
             fs = FileSystem.get(conf);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
             inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
         } catch (IOException e) {
             e.printStackTrace();
@@ -59,11 +56,16 @@ public class CountBolt extends BaseBasicBolt {
         }
 
         System.out.println("BOLT COUNT key: " + key + ", positive: " + positive + ", negative: " + negative);
-
         //Classical output stream usage
         String output = positive + "," + negative + "," + currentTimestamp;
         try {
-            Globals.writeStringToHdfsFile(fs, output, Globals.speedOutputPath + "/" + key + ".txt");
+            String inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
+            if(!previousTimestamp.equals(inProgressTimestamp)){
+                negative = 0;
+                positive = 0;
+            }
+            previousTimestamp = inProgressTimestamp;
+            Globals.writeStringToHdfsFile(fs, output, Globals.speedOutputPath + "/" + inProgressTimestamp + "/"+ key + ".txt");
         } catch (IOException e) {
             e.printStackTrace();
         }
