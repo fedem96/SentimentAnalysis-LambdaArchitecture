@@ -30,11 +30,12 @@ public class Map extends Mapper<Object, Text, Text, IntWritable> {
             System.err.println("Invalid line");
             return;
         }
-        if(values[0].length() < 25){
-            System.err.println("Timestamp too short");
-            return;
-        }
-        String timestamp = values[0].substring(4,10) + values[0].substring(23,28);
+        //FIXME
+//        if(values[0].length() < 33){
+//            System.err.println("Timestamp too short");
+//            return;
+//        }
+        String timestamp = values[0].substring(0,10);
         // change timestamp format
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
         SimpleDateFormat newDateFormat = new SimpleDateFormat(Globals.datePattern, Locale.ENGLISH);
