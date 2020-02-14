@@ -5,12 +5,8 @@ import classify.Classifier;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import utils.Globals;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 
 
 //TODO see how use hbase ?!
@@ -37,15 +33,15 @@ public class Map extends Mapper<Object, Text, Text, IntWritable> {
 //        }
         String timestamp = values[0].substring(0,10);
         // change timestamp format
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
-        SimpleDateFormat newDateFormat = new SimpleDateFormat(Globals.datePattern, Locale.ENGLISH);
-
-        try {
-            timestamp = newDateFormat.format(dateFormat.parse(timestamp));
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return;
-        }
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
+//        SimpleDateFormat newDateFormat = new SimpleDateFormat(Globals.datePattern, Locale.ENGLISH);
+//
+//        try {
+//            timestamp = newDateFormat.format(dateFormat.parse(timestamp));
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//            return;
+//        }
 
         String tweet = values[1];
 

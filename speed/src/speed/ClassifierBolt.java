@@ -8,12 +8,8 @@ import org.apache.storm.topology.base.BaseBasicBolt;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
-import utils.Globals;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 import java.util.Map;
 
 //TODO bolt
@@ -34,17 +30,17 @@ class ClassifierBolt extends BaseBasicBolt {
         values = tuple.getString(0).split(",",2);
         //select the timestamp without time
         String timeStampCurr = values[0];
-        String key = values[0].substring(4,10) + values[0].substring(23,28);
+        String key = values[0].substring(0,10);
         // change timestamp format
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
-        SimpleDateFormat newDateFormat = new SimpleDateFormat(Globals.datePattern, Locale.ENGLISH);
-
-        try {
-            key = newDateFormat.format(dateFormat.parse(key));
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return;
-        }
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
+//        SimpleDateFormat newDateFormat = new SimpleDateFormat(Globals.datePattern, Locale.ENGLISH);
+//
+//        try {
+//            key = newDateFormat.format(dateFormat.parse(key));
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//            return;
+//        }
 
         String tweet = values[1];
 
