@@ -26,20 +26,21 @@ class ClassifierBolt extends BaseBasicBolt {
     }
 
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("timestamp", "sentiment"));// key, sentiment
+        declarer.declare(new Fields("timestamp", "key", "sentiment"));// key, sentiment
     }
 
     public void execute(Tuple tuple, BasicOutputCollector collector) {
         // System.out.println(tuple);
         values = tuple.getString(0).split(",",2);
         //select the timestamp without time
-        String timestamp = values[0].substring(4,10) + values[0].substring(23,28);
+        String timeStampCurr = values[0];
+        String key = values[0].substring(4,10) + values[0].substring(23,28);
         // change timestamp format
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
         SimpleDateFormat newDateFormat = new SimpleDateFormat(Globals.datePattern, Locale.ENGLISH);
 
         try {
-            timestamp = newDateFormat.format(dateFormat.parse(timestamp));
+            key = newDateFormat.format(dateFormat.parse(key));
         } catch (ParseException e) {
             e.printStackTrace();
             return;
@@ -48,7 +49,6 @@ class ClassifierBolt extends BaseBasicBolt {
         String tweet = values[1];
 
         try {
-            //FIXME set path with args?!
             classifier = new Classifier("dataset/classifier_weights.lpc");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -66,9 +66,9 @@ class ClassifierBolt extends BaseBasicBolt {
             sentiment = 4;
         }
 
-        collector.emit( new Values(timestamp, sentiment));
+        collector.emit( new Values(timeStampCurr, key, sentiment));
 
-        System.out.println("BOLT CLASSIFIER: "+ timestamp + ", sentiment: " + sentiment);
+        System.out.println("BOLT CLASSIFIER timestamp cur: " + timeStampCurr + ", key: "+ key + ", sentiment: " + sentiment);
     }
 
 

@@ -36,7 +36,7 @@ public class SpeedLayer {
         builder.setBolt("ClassifierBolt", new ClassifierBolt(), 4).shuffleGrouping("fileReaderSpout");
 
         // group by timestamp the tweet and count the sentiment
-        builder.setBolt("CountBolt", new CountBolt(), 4).fieldsGrouping("ClassifierBolt", new Fields("timestamp"));
+        builder.setBolt("CountBolt", new CountBolt(), 4).fieldsGrouping("ClassifierBolt", new Fields("key"));
 
         LocalCluster cluster = new LocalCluster();
 
