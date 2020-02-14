@@ -55,4 +55,13 @@ public class Globals {
         long time = date.getTime(); // current time in milliseconds
         return new Timestamp(time).toString().replace(" ", "_").replace(":", ";"); // create timestamp from millis
     }
+
+    public static String timestampToKey(String timestamp){
+        // example timestamp: 2020-02-14_16;53;06.346
+        return timestamp.substring(0, 15);
+        // timestamp.substring(0, 10): day precision
+        // timestamp.substring(0, 13): hour precision
+        // timestamp.substring(0, 15): 10 minutes precision
+        // timestamp.substring(0, 16): minute precision
+    }
 }

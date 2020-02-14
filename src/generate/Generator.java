@@ -23,10 +23,10 @@ public class Generator extends Thread{
 
 
     // HYPERPARAMETERS FOR SIMULATE FILE DIM
-    // deltaTime = millis
+    // deltaTime: milliseconds
     static int maxDeltaTimeBatch = 10 * 60 * 1000;
     static int maxDeltaTimeSpeed = 5 * 1024;
-    // fileDim = byte
+    // fileDim: number of bytes
     static int maxFileDimBatch = 10 * 60 * 1000;
     static int maxFileDimSpeed = 5 * 1024;
 
@@ -65,26 +65,20 @@ public class Generator extends Thread{
             System.err.println("Error while reading CSV input file");
             return;
         }
-        // shuffle tweets
-        //FIXME NO SHUFFLE
-        // Collections.shuffle(lines);
 
         // send tweets to Batch and Speed Layers
         try {
             try {
-            int count = 0;
+//            int count = 0;
                 for (String[] line : lines) {
                     String ts = Globals.currentTimestamp();
                     toBatchSender.send(ts, line[5]);
                     toSpeedSender.send(ts, line[5]);
-                    //here we use the timestamp of the dataset
+                    // line[2]: timestamp of the tweet in the dataset
 //                    toBatchSender.send(line[2], line[5]);
 //                    toSpeedSender.send(line[2], line[5]);
 //                System.out.println("" + count++ + " lines sent");
-                    count++;
-                    /**FIXED used for generate simple file for verify count on batch and speed*/
-//                    if(count == 1000)
-//                        return;
+//                    count++;
                     Thread.sleep((long) (Math.random() * 3));
                 }
                 toBatchSender.flush();

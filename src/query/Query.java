@@ -8,64 +8,69 @@ import org.apache.hadoop.io.Text;
 import utils.Globals;
 
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 public class Query {
 
 
-    public static void main(String args[]) throws IOException, ParseException {
+    public static void main(String args[]) throws IOException, ParseException, InterruptedException {
         if(args.length == 0){
             System.err.println("Error: not enough arguments");
             return;
         }
+
+        final long SLEEP_TIME = 3000; // milliseconds
 
         // create configuration
         Configuration conf = new Configuration();
         conf.set("fs.defaultFS", Globals.hdfsURI);
         FileSystem fs = FileSystem.get(conf);
 
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat(Globals.datePattern, Locale.ENGLISH);
-
         if(args.length == 1){ // specific date
-            Date queryDate = dateFormat.parse(args[0]);
+            String queryDate = args[0];
 
+            while (true){
 
-            int[] batchNums = queryBatch(queryDate, queryDate, dateFormat, fs, conf);
-            int numGood = batchNums[0];
-            int numBad = batchNums[1];
+                int[] batchNums = queryBatch(queryDate, queryDate, fs, conf);
+                int numGood = batchNums[0];
+                int numBad = batchNums[1];
 
-            int[] speedNums = querySpeed(queryDate, queryDate, dateFormat, fs);
-            numGood += speedNums[0];
-            numBad += speedNums[1];
+                int[] speedNums = querySpeed(queryDate, queryDate, fs);
+                numGood += speedNums[0];
+                numBad += speedNums[1];
 
-            System.out.println("Num good tweets on " + dateFormat.format(queryDate) + ": " + numGood + " (" + batchNums[0] +" from batch, " + speedNums[0] + " from speed)");
-            System.out.println("Num bad tweets on " + dateFormat.format(queryDate) + ": " + numBad + " (" + batchNums[1] +" from batch, " + speedNums[1] + " from speed)");
+                System.out.println("Num good tweets on " + queryDate + ": " + numGood + " (" + batchNums[0] +" from batch, " + speedNums[0] + " from speed)");
+                System.out.println("Num bad tweets on " + queryDate + ": " + numBad + " (" + batchNums[1] +" from batch, " + speedNums[1] + " from speed)");
+                System.out.println();
 
+                Thread.sleep(SLEEP_TIME);
+            }
 
         } else { // dates interval
-            Date beginDate = dateFormat.parse(args[0]);
-            Date endDate = dateFormat.parse(args[1]);
+            String beginDate = args[0];
+            String endDate = args[1];
 
-            int batchNums[] = queryBatch(beginDate, endDate, dateFormat, fs, conf);
-            int numGood = batchNums[0];
-            int numBad = batchNums[1];
+            while (true) {
 
-            int[] speedNums = querySpeed(beginDate, endDate, dateFormat, fs);
-            numGood += speedNums[0];
-            numBad += speedNums[1];
+                int batchNums[] = queryBatch(beginDate, endDate, fs, conf);
+                int numGood = batchNums[0];
+                int numBad = batchNums[1];
 
-            System.out.println("Num good tweets between " + dateFormat.format(beginDate) + " and " + dateFormat.format(endDate)  + " (included): " + numGood + " (" + batchNums[0] +" from batch, " + speedNums[0] + " from speed)");
-            System.out.println("Num bad tweets between " + dateFormat.format(beginDate) + " and " + dateFormat.format(endDate)  + " (included): " + numBad + " (" + batchNums[1] +" from batch, " + speedNums[1] + " from speed)");
+                int[] speedNums = querySpeed(beginDate, endDate, fs);
+                numGood += speedNums[0];
+                numBad += speedNums[1];
+
+                System.out.println("Num good tweets between " + beginDate + " and " + endDate + " (included): " + numGood + " (" + batchNums[0] + " from batch, " + speedNums[0] + " from speed)");
+                System.out.println("Num bad tweets between " + beginDate + " and " + endDate + " (included): " + numBad + " (" + batchNums[1] + " from batch, " + speedNums[1] + " from speed)");
+                System.out.println();
+
+                Thread.sleep(SLEEP_TIME);
+            }
         }
 
     }
 
-    private static int[] queryBatch(Date beginDate, Date endDate, DateFormat dateFormat, FileSystem fs, Configuration conf) throws IOException {
+    private static int[] queryBatch(String beginDate, String endDate, FileSystem fs, Configuration conf) throws IOException {
         Text key = new Text();
         Text val = new Text();
         int[] nums = new int[2];
@@ -82,16 +87,12 @@ public class Query {
 
             SequenceFile.Reader reader = new SequenceFile.Reader(conf, SequenceFile.Reader.file(filePath));
             while (reader.next(key, val)) {
-                try {
-                    Date tweetDate = dateFormat.parse(key.toString());
-                    if((!beginDate.after(tweetDate) && !endDate.before(tweetDate))){
-                        String counts[] = val.toString().split(",");
-                        nums[0] += Integer.parseInt(counts[0]);
-                        nums[1] += Integer.parseInt(counts[1]);
-                        break;
-                    }
-                } catch (ParseException e) {
-                    System.err.println("Error: cannot parse date");
+                String tweetDate = key.toString();
+                if(beginDate.compareTo(tweetDate) <= 0 && tweetDate.compareTo(endDate) <= 0){
+                    String counts[] = val.toString().split(",");
+                    nums[0] += Integer.parseInt(counts[0]);
+                    nums[1] += Integer.parseInt(counts[1]);
+                    break;
                 }
             }
             reader.close();
@@ -102,7 +103,7 @@ public class Query {
         return nums;
     }
 
-    public static int[] querySpeed(Date beginDate, Date endDate, DateFormat dateFormat , FileSystem fs) throws IOException, ParseException {
+    public static int[] querySpeed(String beginDate, String endDate, FileSystem fs) throws IOException, ParseException {
 
         int[] nums = new int[2];
         int numGood = 0;
@@ -112,24 +113,26 @@ public class Query {
         String inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
 
         for(String timestamp: new String[]{processedTimestamp, inProgressTimestamp}) {
-            RemoteIterator<LocatedFileStatus> fileStatusListIterator = fs.listFiles(new Path(Globals.speedOutputPath + "/" + timestamp), false);
+            Path path = new Path(Globals.speedOutputPath + "/" + timestamp);
+            if (!fs.exists(path))
+                continue;
+            RemoteIterator<LocatedFileStatus> fileStatusListIterator = fs.listFiles(path, false);
 
             while (fileStatusListIterator.hasNext()) {
                 LocatedFileStatus fileStatus = fileStatusListIterator.next();
-                String fileName = fileStatus.getPath().getName();
-                // System.out.println(fileName);
-                //do stuff with the file like ...
-                Date tweetDate = dateFormat.parse(fileName);
-                if ((!beginDate.after(tweetDate) && !endDate.before(tweetDate))) {
-
+                String tweetDate = fileStatus.getPath().getName().replace(".txt", "");
+                if(beginDate.compareTo(tweetDate) <= 0 && tweetDate.compareTo(endDate) <= 0){
                     FSDataInputStream in = fs.open(fileStatus.getPath());
                     String line = IOUtils.toString(in, "UTF-16");
-                    // System.out.println(line);
                     in.close();
-
-                    String counts[] = line.split(",");
-                    numGood += Integer.parseInt(counts[0]);
-                    numBad += Integer.parseInt(counts[1]);
+                    try {
+                        String counts[] = line.split(",");
+                        numGood += Integer.parseInt(counts[0]);
+                        numBad += Integer.parseInt(counts[1]);
+                    }
+                    catch (NumberFormatException nfe){
+                        nfe.printStackTrace();
+                    }
                 }
             }
         }

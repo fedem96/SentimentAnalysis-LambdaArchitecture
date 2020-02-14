@@ -17,7 +17,6 @@ public class CountBolt extends BaseBasicBolt {
     private int negative;
     private FileSystem fs;
     private String previousTimestamp;
-    private String inProgressTimestamp;
 
     @Override
     public void prepare(Map<String, Object> topoConf, TopologyContext context) {
@@ -31,7 +30,6 @@ public class CountBolt extends BaseBasicBolt {
         previousTimestamp = "";
         try {
             fs = FileSystem.get(conf);
-            inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -44,10 +42,9 @@ public class CountBolt extends BaseBasicBolt {
 
     @Override
     public void execute(Tuple tuple, BasicOutputCollector basicOutputCollector) {
-        // here i have the in progress timestamp and the current timestamp
-        String currentTimestamp = tuple.getString(0);
-        String key = tuple.getString(1);
-        int sentiment = tuple.getInteger(2);
+        String key = tuple.getString(0);
+        int sentiment = tuple.getInteger(1);
+        String tweetTimestamp = tuple.getString(2);
 
         if (sentiment == 4) {
             positive++;
@@ -56,14 +53,19 @@ public class CountBolt extends BaseBasicBolt {
         }
 
         System.out.println("BOLT COUNT key: " + key + ", positive: " + positive + ", negative: " + negative);
-        //Classical output stream usage
-        String output = positive + "," + negative + "," + currentTimestamp;
         try {
+            // discard tweet if already processed by batch layer
+            // TODO sistemare
+//            String processedTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProcessedTimestamp);
+//            if(tweetTimestamp.compareTo(processedTimestamp) <= 0)
+//                return;
+
             String inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
             if(!previousTimestamp.equals(inProgressTimestamp)){
                 negative = 0;
                 positive = 0;
             }
+            String output = positive + "," + negative;
             previousTimestamp = inProgressTimestamp;
             Globals.writeStringToHdfsFile(fs, output, Globals.speedOutputPath + "/" + inProgressTimestamp + "/"+ key + ".txt");
         } catch (IOException e) {
