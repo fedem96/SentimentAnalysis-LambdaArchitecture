@@ -1,5 +1,13 @@
 package utils;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
+import java.io.IOException;
+
 public class Globals {
 
     public static final String hdfsURI = "hdfs://localhost:9000";
@@ -18,4 +26,27 @@ public class Globals {
     public static final String syncPath = "/sync";
     public static final String syncProgressTimestamp = syncPath + "/progress_timestamp.txt";
     public static final String syncLastBatchOutput = syncPath + "/last_batch_output.txt";
+
+    public static void writeStringToHdfsFile(FileSystem fs, String string, String filePath) throws IOException {
+        FSDataOutputStream outputStream = fs.create(new Path(Globals.syncProgressTimestamp));
+        outputStream.writeChars(string);
+        outputStream.close();
+    }
+
+    public static String readStringFromHdfsFile(FileSystem fs, String filePath){
+        Path hdfsPath = new Path(filePath); //Create a path
+        FSDataInputStream is = null; //Init input stream
+        String str = null;
+        try {
+            is = fs.open(hdfsPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            str = IOUtils.toString(is, "UTF-16");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
 }

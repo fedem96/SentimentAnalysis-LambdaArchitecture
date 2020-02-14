@@ -54,10 +54,10 @@ public class BatchLayer extends Job {
                 fs.delete(new Path(outputPath), true);
 
             // get timestamp and save
-            Date date= new Date();
+            Date date = new Date();
             long time = date.getTime(); // current time in milliseconds
             String ts = new Timestamp(time).toString(); // create timestamp from millis
-
+            Globals.writeStringToHdfsFile(fs, ts, Globals.syncProgressTimestamp);
 
             // create and start Batch Layer
             Job batchLayer = new BatchLayer(conf, "BatchTwitterSentimentAnalysis", Globals.batchInputPath, outputPath);
@@ -66,7 +66,7 @@ public class BatchLayer extends Job {
 
 
             // write last folder
-
+            Globals.writeStringToHdfsFile(fs, outputPath, Globals.syncLastBatchOutput);
 
             // wait 5 seconds
             Thread.sleep(5000);

@@ -1,11 +1,7 @@
 package speed;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -37,20 +33,8 @@ public class CountBolt extends BaseBasicBolt {
             e.printStackTrace();
         }
 
-        Path hdfsreadpath = new Path(Globals.syncProgressTimestamp); //Create a path
-        FSDataInputStream is = null; //Init input stream
-        try {
-            is = fs.open(hdfsreadpath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            inProgressTimestamp= IOUtils.toString(is, "UTF-16");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-
+        inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
     }
 
     @Override
@@ -73,30 +57,12 @@ public class CountBolt extends BaseBasicBolt {
 
         System.out.println("BOLT COUNT key: " + key + ", positive: " + positive + ", negative: " + negative);
 
-        //Create a path
-        Path hdfswritepath = new Path(Globals.speedOutputPath + "/" + key + ".txt");
-        //Init output stream
-        FSDataOutputStream outputStream = null;
-        try {
-            outputStream = fs.create(hdfswritepath);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
         //Classical output stream usage
         String output = positive + "," + negative + "," + currentTimestamp;
-
         try {
-            outputStream.writeChars(output);
+            Globals.writeStringToHdfsFile(fs, output, Globals.speedOutputPath + "/" + key + ".txt");
         } catch (IOException e) {
             e.printStackTrace();
-            return;
-        }
-        try {
-            outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
         }
 
     }
