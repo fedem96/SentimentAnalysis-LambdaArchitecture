@@ -7,8 +7,6 @@ import utils.Globals;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -76,13 +74,7 @@ public class Generator extends Thread{
             try {
             int count = 0;
                 for (String[] line : lines) {
-                    //FIXME
-                    //Date object
-                    Date date= new Date();
-                    //getTime() returns current time in milliseconds
-                    long time = date.getTime();
-                    //Passed the milliseconds to constructor of Timestamp class
-                    String ts = new Timestamp(time).toString().replace(" ", "_");
+                    String ts = Globals.currentTimestamp();
                     toBatchSender.send(ts, line[5]);
                     toSpeedSender.send(ts, line[5]);
                     //here we use the timestamp of the dataset

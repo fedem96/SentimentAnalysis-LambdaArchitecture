@@ -53,6 +53,6 @@ public class Globals {
     public static String currentTimestamp(){
         Date date = new Date();
         long time = date.getTime(); // current time in milliseconds
-        return new Timestamp(time).toString().replace(" ", "_"); // create timestamp from millis
+        return new Timestamp(time).toString().replace(" ", "_").replace(":", ";"); // create timestamp from millis
     }
 }
