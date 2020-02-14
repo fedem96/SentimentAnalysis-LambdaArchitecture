@@ -12,6 +12,8 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import utils.Globals;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 
 public class BatchLayer extends Job {
 
@@ -40,13 +42,35 @@ public class BatchLayer extends Job {
         conf.set("fs.defaultFS", Globals.hdfsURI);
         FileSystem fs = FileSystem.get(conf);
 
-        // clear output dir
-        if (fs.exists(new Path(Globals.batchOutputPath)))
-            fs.delete(new Path(Globals.batchOutputPath), true);
+        int outputIndex = 0;
 
-        // create and start Batch Layer
-        Job batchLayer = new BatchLayer(conf, "BatchTwitterSentimentAnalysis", Globals.batchInputPath, Globals.batchOutputPath);
-        batchLayer.setJarByClass(BatchLayer.class);
-        batchLayer.waitForCompletion(true);
+        while (true) {
+            // select output path
+            String outputPath = Globals.batchOutputPaths[outputIndex];
+            outputIndex = (outputIndex + 1) % Globals.batchOutputPaths.length;
+
+            // clear output dir
+            if (fs.exists(new Path(outputPath)))
+                fs.delete(new Path(outputPath), true);
+
+            // get timestamp and save
+            Date date= new Date();
+            long time = date.getTime(); // current time in milliseconds
+            String ts = new Timestamp(time).toString(); // create timestamp from millis
+
+
+            // create and start Batch Layer
+            Job batchLayer = new BatchLayer(conf, "BatchTwitterSentimentAnalysis", Globals.batchInputPath, outputPath);
+            batchLayer.setJarByClass(BatchLayer.class);
+            batchLayer.waitForCompletion(true);
+
+
+            // write last folder
+
+
+            // wait 5 seconds
+            Thread.sleep(5000);
+        }
     }
+
 }
