@@ -36,7 +36,7 @@ public class Globals {
         outputStream.close();
     }
 
-    public static String readStringFromHdfsFile(FileSystem fs, String filePath){
+    public static String readStringFromHdfsFile(FileSystem fs, String filePath) throws IOException {
         Path hdfsPath = new Path(filePath); //Create a path
         FSDataInputStream is = null; //Init input stream
         String str = null;

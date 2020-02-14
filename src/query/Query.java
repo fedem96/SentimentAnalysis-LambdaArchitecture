@@ -108,7 +108,10 @@ public class Query {
         int numGood = 0;
         int numBad = 0;
 
-        RemoteIterator<LocatedFileStatus> fileStatusListIterator = fs.listFiles(new Path(Globals.speedOutputPath), true);
+        String inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
+        String currentTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProcessedTimestamp);
+
+        RemoteIterator<LocatedFileStatus> fileStatusListIterator = fs.listFiles(new Path(Globals.speedOutputPath + inProgressTimestamp), true);
 
         while(fileStatusListIterator.hasNext()){
             LocatedFileStatus fileStatus = fileStatusListIterator.next();
@@ -132,6 +135,12 @@ public class Query {
 
         nums[0] = numGood;
         nums[1] = numBad;
+        
+        if (currentTimestamp.compareTo(inProgressTimestamp)){
+            nums[0] = 0;
+            nums[1] = 0;
+        }
+
         return nums;
     }
 

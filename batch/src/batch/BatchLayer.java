@@ -38,12 +38,12 @@ public class BatchLayer extends Job {
         // create configuration
         Configuration conf = new Configuration();
         conf.set("fs.defaultFS", Globals.hdfsURI);
-        FileSystem fs = FileSystem.get(conf);
 
         int outputIndex = 0;
 
         String ts = null;
         while (true) {
+            FileSystem fs = FileSystem.get(conf);
             // select output path
             String outputPath = Globals.batchOutputPaths[outputIndex];
             outputIndex = (outputIndex + 1) % Globals.batchOutputPaths.length;
@@ -68,6 +68,7 @@ public class BatchLayer extends Job {
             Globals.writeStringToHdfsFile(fs, outputPath, Globals.syncLastBatchOutput);
 
             // wait 5 seconds
+            fs.close();
             Thread.sleep(5000);
         }
     }

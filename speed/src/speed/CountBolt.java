@@ -33,8 +33,11 @@ public class CountBolt extends BaseBasicBolt {
             e.printStackTrace();
         }
 
-
-        inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
+        try {
+            inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
