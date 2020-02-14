@@ -108,38 +108,34 @@ public class Query {
         int numGood = 0;
         int numBad = 0;
 
+        String processedTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProcessedTimestamp);
         String inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
-        String currentTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProcessedTimestamp);
 
-        RemoteIterator<LocatedFileStatus> fileStatusListIterator = fs.listFiles(new Path(Globals.speedOutputPath + inProgressTimestamp), true);
+        for(String timestamp: new String[]{processedTimestamp, inProgressTimestamp}) {
+            RemoteIterator<LocatedFileStatus> fileStatusListIterator = fs.listFiles(new Path(Globals.speedOutputPath + "/" + timestamp), false);
 
-        while(fileStatusListIterator.hasNext()){
-            LocatedFileStatus fileStatus = fileStatusListIterator.next();
-            String fileName = fileStatus.getPath().getName();
-            // System.out.println(fileName);
-            //do stuff with the file like ...
-            Date tweetDate = dateFormat.parse(fileName);
-            if((!beginDate.after(tweetDate) && !endDate.before(tweetDate))){
+            while (fileStatusListIterator.hasNext()) {
+                LocatedFileStatus fileStatus = fileStatusListIterator.next();
+                String fileName = fileStatus.getPath().getName();
+                // System.out.println(fileName);
+                //do stuff with the file like ...
+                Date tweetDate = dateFormat.parse(fileName);
+                if ((!beginDate.after(tweetDate) && !endDate.before(tweetDate))) {
 
-                FSDataInputStream in = fs.open(fileStatus.getPath());
-                String line = IOUtils.toString(in, "UTF-16");
-                // System.out.println(line);
-                in.close();
+                    FSDataInputStream in = fs.open(fileStatus.getPath());
+                    String line = IOUtils.toString(in, "UTF-16");
+                    // System.out.println(line);
+                    in.close();
 
-                String counts[] = line.split(",");
-                numGood += Integer.parseInt(counts[0]);
-                numBad += Integer.parseInt(counts[1]);
+                    String counts[] = line.split(",");
+                    numGood += Integer.parseInt(counts[0]);
+                    numBad += Integer.parseInt(counts[1]);
+                }
             }
-
         }
 
         nums[0] = numGood;
         nums[1] = numBad;
-        
-        if (currentTimestamp.compareTo(inProgressTimestamp)){
-            nums[0] = 0;
-            nums[1] = 0;
-        }
 
         return nums;
     }
