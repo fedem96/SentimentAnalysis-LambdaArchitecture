@@ -8,12 +8,11 @@ import org.apache.hadoop.io.Text;
 import utils.Globals;
 
 import java.io.IOException;
-import java.text.ParseException;
 
 public class Query {
 
 
-    public static void main(String args[]) throws IOException, ParseException, InterruptedException {
+    public static void main(String args[]) throws IOException, InterruptedException {
         if(args.length == 0){
             System.err.println("Error: not enough arguments");
             return;
@@ -103,7 +102,7 @@ public class Query {
         return nums;
     }
 
-    public static int[] querySpeed(String beginDate, String endDate, FileSystem fs) throws IOException, ParseException {
+    public static int[] querySpeed(String beginDate, String endDate, FileSystem fs) throws IOException {
 
         int[] nums = new int[2];
         int numGood = 0;
@@ -112,10 +111,13 @@ public class Query {
         String processedTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProcessedTimestamp);
         String inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
 
+        int pg = 0, pb = 0;
+
         for(String timestamp: new String[]{processedTimestamp, inProgressTimestamp}) {
             Path path = new Path(Globals.speedOutputPath + "/" + timestamp);
             if (!fs.exists(path))
                 continue;
+            System.out.println(timestamp);
             RemoteIterator<LocatedFileStatus> fileStatusListIterator = fs.listFiles(path, false);
 
             while (fileStatusListIterator.hasNext()) {
@@ -135,6 +137,10 @@ public class Query {
                     }
                 }
             }
+            System.out.println("good: " + (numGood-pg));
+            System.out.println("bad: " + (numBad-pb));
+            pg = numGood;
+            pb = numBad;
         }
 
         nums[0] = numGood;

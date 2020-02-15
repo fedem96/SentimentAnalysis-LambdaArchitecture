@@ -54,13 +54,13 @@ public class CountBolt extends BaseBasicBolt {
 
         System.out.println("BOLT COUNT key: " + key + ", positive: " + positive + ", negative: " + negative);
         try {
-            // discard tweet if already processed by batch layer
+            // discard tweet if already processed by batch layer or if in progress (if in progress, it should have already been counted: if not, I can't count it anymore because the counters were reset)
             // TODO sistemare
 //            String processedTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProcessedTimestamp);
-//            if(tweetTimestamp.compareTo(processedTimestamp) <= 0)
-//                return;
 
             String inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
+            if(tweetTimestamp.compareTo(inProgressTimestamp) <= 0)
+                return; // I want to count only tweets after inProgressTimestamp
             if(!previousTimestamp.equals(inProgressTimestamp)){
                 negative = 0;
                 positive = 0;
