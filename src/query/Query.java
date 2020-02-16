@@ -8,6 +8,8 @@ import org.apache.hadoop.io.Text;
 import utils.Globals;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Query {
 
@@ -75,6 +77,7 @@ public class Query {
         int[] nums = new int[2];
 
         String outputPath = Globals.readStringFromHdfsFile(fs, Globals.syncLastBatchOutput);
+        System.out.println("reading batch: " + outputPath);
         RemoteIterator<LocatedFileStatus> filesIterator = fs.listFiles(new Path(outputPath), false);
         while (filesIterator.hasNext()) {
             LocatedFileStatus file = filesIterator.next();
@@ -111,13 +114,18 @@ public class Query {
         String processedTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProcessedTimestamp);
         String inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
 
+        List<String> timestamps = new ArrayList<String>();
+        timestamps.add(processedTimestamp);
+        if(!processedTimestamp.equals(inProgressTimestamp))
+            timestamps.add(inProgressTimestamp);
+
         int pg = 0, pb = 0;
 
-        for(String timestamp: new String[]{processedTimestamp, inProgressTimestamp}) {
+        for(String timestamp: timestamps) {
             Path path = new Path(Globals.speedOutputPath + "/" + timestamp);
             if (!fs.exists(path))
                 continue;
-            System.out.println(timestamp);
+            System.out.println("reading speed: " + timestamp);
             RemoteIterator<LocatedFileStatus> fileStatusListIterator = fs.listFiles(path, false);
 
             while (fileStatusListIterator.hasNext()) {

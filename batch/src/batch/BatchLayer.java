@@ -53,8 +53,6 @@ public class BatchLayer extends Job {
                 fs.delete(new Path(outputPath), true);
 
             // get timestamp and save
-            if(ts != null)
-                Globals.writeStringToHdfsFile(fs, ts, Globals.syncProcessedTimestamp);
             ts = Globals.currentTimestamp();
             Globals.writeStringToHdfsFile(fs, ts, Globals.syncProgressTimestamp);
 
@@ -63,9 +61,9 @@ public class BatchLayer extends Job {
             batchLayer.setJarByClass(BatchLayer.class);
             batchLayer.waitForCompletion(true);
 
-
             // write last folder
             Globals.writeStringToHdfsFile(fs, outputPath, Globals.syncLastBatchOutput);
+            Globals.writeStringToHdfsFile(fs, ts, Globals.syncProcessedTimestamp);
 
             // wait 5 seconds
             fs.close();
