@@ -52,7 +52,7 @@ public class CountBolt extends BaseBasicBolt {
             negative++;
         }
 
-        System.out.println("BOLT COUNT key: " + key + ", positive: " + positive + ", negative: " + negative);
+        System.out.println("BOLT COUNT timestamp: " + tweetTimestamp + "key: " + key + ", positive: " + positive + ", negative: " + negative);
         try {
             // discard tweet if already processed by batch layer or if in progress (if in progress, it should have already been counted: if not, I can't count it anymore because the counters were reset)
             // TODO sistemare
@@ -67,7 +67,8 @@ public class CountBolt extends BaseBasicBolt {
             }
             String output = positive + "," + negative;
             previousTimestamp = inProgressTimestamp;
-            Globals.writeStringToHdfsFile(fs, output, Globals.speedOutputPath + "/" + inProgressTimestamp + "/"+ key + ".txt");
+            //fixme bug here inProgresTimestamp = ""
+            Globals.writeStringToHdfsFile(fs, output, Globals.speedOutputPath + "/" + inProgressTimestamp + "/" + key + ".txt");
         } catch (IOException e) {
             e.printStackTrace();
         }

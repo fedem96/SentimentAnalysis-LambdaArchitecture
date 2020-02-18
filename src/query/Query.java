@@ -94,7 +94,6 @@ public class Query {
                     String counts[] = val.toString().split(",");
                     nums[0] += Integer.parseInt(counts[0]);
                     nums[1] += Integer.parseInt(counts[1]);
-                    break;
                 }
             }
             reader.close();

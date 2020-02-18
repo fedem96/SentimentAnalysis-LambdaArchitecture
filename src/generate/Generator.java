@@ -24,17 +24,18 @@ public class Generator extends Thread{
 
     // HYPERPARAMETERS FOR SIMULATE FILE DIM
     // deltaTime: milliseconds
-    static int maxDeltaTimeBatch = 10 * 60 * 1000;
-    static int maxDeltaTimeSpeed = 5 * 1024;
+    static int maxDeltaTimeBatch = 2* 10 * 60 * 1000;
+    static int maxDeltaTimeSpeed = 2* 5 * 1024;
     // fileDim: number of bytes
-    static int maxFileDimBatch = 10 * 60 * 1000;
-    static int maxFileDimSpeed = 5 * 1024;
+    static int maxFileDimBatch = 2* 10 * 60 * 1000;
+    static int maxFileDimSpeed = 2* 5 * 1024;
 
 
     public Generator(String hdfsURI, String csvPath, String batchInputPath, String speedInputPath) throws IOException {
         this.csvPath = csvPath;
         this.toBatchSender = new Sender(hdfsURI, batchInputPath, maxDeltaTimeBatch, maxFileDimBatch);
         this.toSpeedSender = new Sender(hdfsURI, speedInputPath, maxDeltaTimeSpeed, maxFileDimSpeed);
+
         System.out.println("Generator created");
     }
 
@@ -66,12 +67,32 @@ public class Generator extends Thread{
             return;
         }
 
+        //INIZIALIZATION Script
+
+        // create configuration
+        Configuration conf = new Configuration();
+        conf.set("fs.defaultFS", Globals.hdfsURI);
+        FileSystem fs = null;
+        try {
+            fs = FileSystem.get(conf);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // get timestamp and save
+        String ts = Globals.currentTimestamp();
+        try {
+            Globals.writeStringToHdfsFile(fs, ts, Globals.syncProgressTimestamp);
+            Globals.writeStringToHdfsFile(fs, ts, Globals.syncProcessedTimestamp);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         // send tweets to Batch and Speed Layers
         try {
             try {
 //            int count = 0;
                 for (String[] line : lines) {
-                    String ts = Globals.currentTimestamp();
+                    ts = Globals.currentTimestamp();
                     toBatchSender.send(ts, line[5]);
                     toSpeedSender.send(ts, line[5]);
                     // line[2]: timestamp of the tweet in the dataset
@@ -79,7 +100,7 @@ public class Generator extends Thread{
 //                    toSpeedSender.send(line[2], line[5]);
 //                System.out.println("" + count++ + " lines sent");
 //                    count++;
-                    Thread.sleep((long) (Math.random() * 3));
+                    Thread.sleep((long) (3));//(Math.random() * 3));
                 }
                 toBatchSender.flush();
                 toSpeedSender.flush();
