@@ -14,11 +14,10 @@ public class Globals {
 
     public static final String hdfsURI = "hdfs://localhost:9000";
 
-    public static String datePattern = "dd-MMM-yyyy";
+    public static String timestampFormatPattern = "yyyy-MM-dd_HH;mm;ss.SSS";
 
     public static final String batchInputPath = "/batch/input";
     public static final String[] batchOutputPaths = new String[]{"/batch/output0", "/batch/output1"};
-//    public static final String batchOutputFile = batchOutputPath + "/part-r-00000";
 
     public static final String speedInputPath = "/speed/input";
     public static final String speedOutputPath = "/speed/output";
@@ -38,15 +37,9 @@ public class Globals {
 
     public static String readStringFromHdfsFile(FileSystem fs, String filePath) throws IOException {
         Path hdfsPath = new Path(filePath); //Create a path
-        FSDataInputStream is = null; //Init input stream
-        String str = null;
-        try {
-            is = fs.open(hdfsPath);
-            str = IOUtils.toString(is, "UTF-16");
-            is.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FSDataInputStream is = fs.open(hdfsPath);
+        String str = IOUtils.toString(is, "UTF-16");
+        is.close();
         return str;
     }
 

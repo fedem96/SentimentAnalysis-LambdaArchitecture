@@ -71,12 +71,19 @@ public class Query {
 
     }
 
-    private static int[] queryBatch(String beginDate, String endDate, FileSystem fs, Configuration conf) throws IOException {
+    static int[] queryBatch(String beginDate, String endDate, FileSystem fs, Configuration conf) throws IOException {
         Text key = new Text();
         Text val = new Text();
         int[] nums = new int[2];
 
-        String outputPath = Globals.readStringFromHdfsFile(fs, Globals.syncLastBatchOutput);
+        String outputPath;
+        try {
+            outputPath = Globals.readStringFromHdfsFile(fs, Globals.syncLastBatchOutput);
+        }
+        catch (IOException ioe){
+            return nums;
+        }
+
         System.out.println("reading batch: " + outputPath);
         RemoteIterator<LocatedFileStatus> filesIterator = fs.listFiles(new Path(outputPath), false);
         while (filesIterator.hasNext()) {
@@ -104,7 +111,7 @@ public class Query {
         return nums;
     }
 
-    public static int[] querySpeed(String beginDate, String endDate, FileSystem fs) throws IOException {
+    static int[] querySpeed(String beginDate, String endDate, FileSystem fs) throws IOException {
 
         int[] nums = new int[2];
         int numGood = 0;
