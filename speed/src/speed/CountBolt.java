@@ -17,6 +17,8 @@ public class CountBolt extends BaseBasicBolt {
     private int negative;
     private FileSystem fs;
     private String previousTimestamp;
+    private long lastWrite;
+    private static final long MAX_WAIT_TO_WRITE = 10 * 1000;
 
     @Override
     public void prepare(Map<String, Object> topoConf, TopologyContext context) {
@@ -33,6 +35,7 @@ public class CountBolt extends BaseBasicBolt {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        lastWrite = System.currentTimeMillis();
     }
 
     @Override
@@ -65,17 +68,21 @@ public class CountBolt extends BaseBasicBolt {
                 return; // I want to count only tweets after inProgressTimestamp
             }
 
+            long now = System.currentTimeMillis();
             String output = positive + "," + negative;
             if(!previousTimestamp.equals(inProgressTimestamp)){
                 Globals.writeStringToHdfsFile(fs, output, Globals.speedOutputPath + "/" + inProgressTimestamp + "/" + key + ".txt");
+                lastWrite = now;
                 negative = 0;
                 positive = 0;
                 output = positive + "," + negative;
             }
             previousTimestamp = inProgressTimestamp;
             //fixme bug here inProgresTimestamp = ""
-            if(Math.random() < 0.01)
+            if(Math.random() < 0.001 || (now - lastWrite) > MAX_WAIT_TO_WRITE) {
                 Globals.writeStringToHdfsFile(fs, output, Globals.speedOutputPath + "/" + inProgressTimestamp + "/" + key + ".txt");
+                lastWrite = now;
+            }
             else
                 System.out.println("skipped saving");
 
