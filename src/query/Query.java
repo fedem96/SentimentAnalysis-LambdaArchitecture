@@ -145,36 +145,32 @@ public class Query {
                 continue;
             System.out.println("reading speed: " + timestamp);
 
-            
-            // qui non fa nulla perchè vede una directory e listfiles non vede nulla
-            RemoteIterator<LocatedFileStatus> fileStatusListIterator = fs.listFiles(path, false);
-
-
-
+            RemoteIterator<LocatedFileStatus> fileStatusListIterator = fs.listFiles(path, true);
             while (fileStatusListIterator.hasNext()) {
                 LocatedFileStatus fileStatus = fileStatusListIterator.next();
-                String tweetDate = fileStatus.getPath().getName().replace(".txt", "");
+                String keyword = fileStatus.getPath().getName().replace(".txt", "");
+                String tweetDate = fileStatus.getPath().getParent().getName();
                 if (beginDate.compareTo(tweetDate) <= 0 && tweetDate.compareTo(endDate) <= 0) {
                     FSDataInputStream in = fs.open(fileStatus.getPath());
                     String line = IOUtils.toString(in, "UTF-16");
                     in.close();
                     try {
                         String counts[] = line.split(",");
-                        //FIXME controllare qui cosa succede
                         if (!counts[0].equals("")) {
-                            hm.get("total")[0] += Integer.parseInt(counts[0]);
-                            hm.get("total")[1] += Integer.parseInt(counts[1]);
+                            hm.get(keyword)[0] += Integer.parseInt(counts[0]);
+                            hm.get(keyword)[1] += Integer.parseInt(counts[1]);
                         }
                     } catch (NumberFormatException nfe) {
                         nfe.printStackTrace();
                     }
                 }
-            }
-            System.out.println("good: " + (hm.get("total")[0] - pg));
-            System.out.println("bad: " + (hm.get("total")[1] - pb));
-            pg = hm.get("total")[0];
-            pb = hm.get("total")[1];
 
+                System.out.println(keyword);
+                System.out.println("good: " + (hm.get(keyword)[0] - pg));
+                System.out.println("bad: " + (hm.get(keyword)[1] - pb));
+                pg = hm.get(keyword)[0];
+                pb = hm.get(keyword)[1];
+            }
         }
 
         return hm;
