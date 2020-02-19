@@ -90,7 +90,7 @@ public class Generator extends Thread{
         // send tweets to Batch and Speed Layers
         try {
             try {
-            int count = 0;
+//            int count = 0;
                 for (String[] line : lines) {
                     ts = Globals.currentTimestamp();
                     toBatchSender.send(ts, line[5]);
@@ -98,10 +98,10 @@ public class Generator extends Thread{
                     // line[2]: timestamp of the tweet in the dataset
 //                    toBatchSender.send(line[2], line[5]);
 //                    toSpeedSender.send(line[2], line[5]);
-                    System.out.println("lines sent:" + count);
-                    count++;
-                    if(count == 20000)
-                        return;
+//                    System.out.println("lines sent:" + count);
+//                    count++;
+//                    if(count == 20000)
+//                        return;
                     Thread.sleep((long) (Math.random() * 3));
                 }
                 toBatchSender.flush();
