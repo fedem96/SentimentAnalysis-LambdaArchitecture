@@ -12,7 +12,7 @@ import utils.Globals;
 import java.io.IOException;
 import java.util.Map;
 
-public class CountBolt extends BaseBasicBolt {
+public class    CountBolt extends BaseBasicBolt {
     private int positive;
     private int negative;
     private FileSystem fs;
@@ -56,19 +56,22 @@ public class CountBolt extends BaseBasicBolt {
         try {
             // discard tweet if already processed by batch layer or if in progress (if in progress, it should have already been counted: if not, I can't count it anymore because the counters were reset)
             // TODO sistemare
-//            String processedTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProcessedTimestamp);
+            // String processedTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProcessedTimestamp);
 
             String inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
             if(tweetTimestamp.compareTo(inProgressTimestamp) <= 0)
                 return; // I want to count only tweets after inProgressTimestamp
+            String output = positive + "," + negative;
             if(!previousTimestamp.equals(inProgressTimestamp)){
+                Globals.writeStringToHdfsFile(fs, output, Globals.speedOutputPath + "/" + inProgressTimestamp + "/" + key + ".txt");
                 negative = 0;
                 positive = 0;
+                output = positive + "," + negative;
             }
-            String output = positive + "," + negative;
             previousTimestamp = inProgressTimestamp;
             //fixme bug here inProgresTimestamp = ""
-            Globals.writeStringToHdfsFile(fs, output, Globals.speedOutputPath + "/" + inProgressTimestamp + "/" + key + ".txt");
+            if(Math.random() < 0.025)
+                Globals.writeStringToHdfsFile(fs, output, Globals.speedOutputPath + "/" + inProgressTimestamp + "/" + key + ".txt");
         } catch (IOException e) {
             e.printStackTrace();
         }

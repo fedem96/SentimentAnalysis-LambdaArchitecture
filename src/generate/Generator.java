@@ -24,11 +24,11 @@ public class Generator extends Thread{
 
     // HYPERPARAMETERS FOR SIMULATE FILE DIM
     // deltaTime: milliseconds
-    static int maxDeltaTimeBatch = 2* 10 * 60 * 1000;
-    static int maxDeltaTimeSpeed = 2* 5 * 1024;
+    static int maxDeltaTimeBatch = 10 * 60 * 1000;
+    static int maxDeltaTimeSpeed = 5 * 1024;
     // fileDim: number of bytes
-    static int maxFileDimBatch = 2* 10 * 60 * 1000;
-    static int maxFileDimSpeed = 2* 5 * 1024;
+    static int maxFileDimBatch = 10 * 60 * 1000;
+    static int maxFileDimSpeed = 5 * 1024;
 
 
     public Generator(String hdfsURI, String csvPath, String batchInputPath, String speedInputPath) throws IOException {
@@ -90,7 +90,7 @@ public class Generator extends Thread{
         // send tweets to Batch and Speed Layers
         try {
             try {
-//            int count = 0;
+            int count = 0;
                 for (String[] line : lines) {
                     ts = Globals.currentTimestamp();
                     toBatchSender.send(ts, line[5]);
@@ -98,9 +98,11 @@ public class Generator extends Thread{
                     // line[2]: timestamp of the tweet in the dataset
 //                    toBatchSender.send(line[2], line[5]);
 //                    toSpeedSender.send(line[2], line[5]);
-//                System.out.println("" + count++ + " lines sent");
-//                    count++;
-                    Thread.sleep((long) (3));//(Math.random() * 3));
+                    System.out.println("lines sent:" + count);
+                    count++;
+                    if(count == 20000)
+                        return;
+                    Thread.sleep((long) (Math.random() * 3));
                 }
                 toBatchSender.flush();
                 toSpeedSender.flush();

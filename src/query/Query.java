@@ -143,8 +143,11 @@ public class Query {
                     in.close();
                     try {
                         String counts[] = line.split(",");
-                        numGood += Integer.parseInt(counts[0]);
-                        numBad += Integer.parseInt(counts[1]);
+                        //FIXME controllare qui cosa succede
+                        if(!counts[0].equals("")){
+                            numGood += Integer.parseInt(counts[0]);
+                            numBad += Integer.parseInt(counts[1]);
+                        }
                     }
                     catch (NumberFormatException nfe){
                         nfe.printStackTrace();
