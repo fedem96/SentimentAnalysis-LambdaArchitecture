@@ -8,8 +8,7 @@ import org.apache.hadoop.io.Text;
 import utils.Globals;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Query {
 
@@ -32,16 +31,20 @@ public class Query {
 
             while (true){
 
-                int[] batchNums = queryBatch(queryDate, queryDate, fs, conf);
-                int numGood = batchNums[0];
-                int numBad = batchNums[1];
+                HashMap<String, int[]> batchNums = queryBatch(queryDate, queryDate, fs, conf);
 
-                int[] speedNums = querySpeed(queryDate, queryDate, fs);
-                numGood += speedNums[0];
-                numBad += speedNums[1];
+                HashMap<String, int[]> speedNums = querySpeed(queryDate, queryDate, fs);
 
-                System.out.println("Num good tweets on " + queryDate + ": " + numGood + " (" + batchNums[0] +" from batch, " + speedNums[0] + " from speed)");
-                System.out.println("Num bad tweets on " + queryDate + ": " + numBad + " (" + batchNums[1] +" from batch, " + speedNums[1] + " from speed)");
+                Set<String> words = batchNums.keySet();
+                words.addAll(speedNums.keySet());
+
+                for(String word: words) {
+                    int numGood = batchNums.get(word)[0] + speedNums.get(word)[0];
+                    int numBad = batchNums.get(word)[1] + speedNums.get(word)[1];
+                    System.out.println(word);
+                    System.out.println("Num good tweets on " + queryDate + ": " + numGood + " (" + batchNums.get(word)[0] + " from batch, " + speedNums.get(word)[0] + " from speed)");
+                    System.out.println("Num bad tweets on " + queryDate + ": " + numBad + " (" + batchNums.get(word)[1] + " from batch, " + speedNums.get(word)[1] + " from speed)");
+                }
                 System.out.println();
 
                 Thread.sleep(SLEEP_TIME);
@@ -53,16 +56,21 @@ public class Query {
 
             while (true) {
 
-                int batchNums[] = queryBatch(beginDate, endDate, fs, conf);
-                int numGood = batchNums[0];
-                int numBad = batchNums[1];
+                HashMap<String, int[]> batchNums = queryBatch(beginDate, endDate, fs, conf);
 
-                int[] speedNums = querySpeed(beginDate, endDate, fs);
-                numGood += speedNums[0];
-                numBad += speedNums[1];
+                HashMap<String, int[]> speedNums = querySpeed(beginDate, endDate, fs);
 
-                System.out.println("Num good tweets between " + beginDate + " and " + endDate + " (included): " + numGood + " (" + batchNums[0] + " from batch, " + speedNums[0] + " from speed)");
-                System.out.println("Num bad tweets between " + beginDate + " and " + endDate + " (included): " + numBad + " (" + batchNums[1] + " from batch, " + speedNums[1] + " from speed)");
+                Set<String> words = new HashSet<>();
+                words.addAll(batchNums.keySet());
+                words.addAll(speedNums.keySet());
+
+                for(String word: words) {
+                    int numGood = batchNums.get(word)[0] + speedNums.get(word)[0];
+                    int numBad = batchNums.get(word)[1] + speedNums.get(word)[1];
+                    System.out.println(word);
+                    System.out.println("Num good tweets between " + beginDate + " and " + endDate + ": " + numGood + " (" + batchNums.get(word)[0] + " from batch, " + speedNums.get(word)[0] + " from speed)");
+                    System.out.println("Num bad tweets between " + beginDate + " and " + endDate + ": " + numBad + " (" + batchNums.get(word)[1] + " from batch, " + speedNums.get(word)[1] + " from speed)");
+                }
                 System.out.println();
 
                 Thread.sleep(SLEEP_TIME);
@@ -71,17 +79,20 @@ public class Query {
 
     }
 
-    static int[] queryBatch(String beginDate, String endDate, FileSystem fs, Configuration conf) throws IOException {
+    static HashMap<String, int[]> queryBatch(String beginDate, String endDate, FileSystem fs, Configuration conf) throws IOException {
         Text key = new Text();
         Text val = new Text();
-        int[] nums = new int[2];
+        HashMap<String, int[]> hm = new HashMap<>();
+        hm.put("total", new int[2]);
+        for(String word: Globals.keywords)
+            hm.put(word, new int[2]);
 
         String outputPath;
         try {
             outputPath = Globals.readStringFromHdfsFile(fs, Globals.syncLastBatchOutput);
         }
         catch (IOException ioe){
-            return nums;
+            return hm;
         }
 
         System.out.println("reading batch: " + outputPath);
@@ -96,26 +107,27 @@ public class Query {
 
             SequenceFile.Reader reader = new SequenceFile.Reader(conf, SequenceFile.Reader.file(filePath));
             while (reader.next(key, val)) {
-                String tweetDate = key.toString();
+                String values[] = key.toString().split("/");
+                String tweetDate = values[0];
+                String keyword = values[1];
                 if(beginDate.compareTo(tweetDate) <= 0 && tweetDate.compareTo(endDate) <= 0){
                     String counts[] = val.toString().split(",");
-                    nums[0] += Integer.parseInt(counts[0]);
-                    nums[1] += Integer.parseInt(counts[1]);
+                    hm.get(keyword)[0] += Integer.parseInt(counts[0]);
+                    hm.get(keyword)[1] += Integer.parseInt(counts[1]);
                 }
             }
             reader.close();
         }
 
-
-
-        return nums;
+        return hm;
     }
 
-    static int[] querySpeed(String beginDate, String endDate, FileSystem fs) throws IOException {
+    static HashMap<String, int[]> querySpeed(String beginDate, String endDate, FileSystem fs) throws IOException {
 
-        int[] nums = new int[2];
-        int numGood = 0;
-        int numBad = 0;
+        HashMap<String, int[]> hm = new HashMap<>();
+        hm.put("total", new int[2]);
+        for(String word: Globals.keywords)
+            hm.put(word, new int[2]);
 
         String processedTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProcessedTimestamp);
         String inProgressTimestamp = Globals.readStringFromHdfsFile(fs, Globals.syncProgressTimestamp);
@@ -132,38 +144,40 @@ public class Query {
             if (!fs.exists(path))
                 continue;
             System.out.println("reading speed: " + timestamp);
+
+            
+            // qui non fa nulla perchè vede una directory e listfiles non vede nulla
             RemoteIterator<LocatedFileStatus> fileStatusListIterator = fs.listFiles(path, false);
+
+
 
             while (fileStatusListIterator.hasNext()) {
                 LocatedFileStatus fileStatus = fileStatusListIterator.next();
                 String tweetDate = fileStatus.getPath().getName().replace(".txt", "");
-                if(beginDate.compareTo(tweetDate) <= 0 && tweetDate.compareTo(endDate) <= 0){
+                if (beginDate.compareTo(tweetDate) <= 0 && tweetDate.compareTo(endDate) <= 0) {
                     FSDataInputStream in = fs.open(fileStatus.getPath());
                     String line = IOUtils.toString(in, "UTF-16");
                     in.close();
                     try {
                         String counts[] = line.split(",");
                         //FIXME controllare qui cosa succede
-                        if(!counts[0].equals("")){
-                            numGood += Integer.parseInt(counts[0]);
-                            numBad += Integer.parseInt(counts[1]);
+                        if (!counts[0].equals("")) {
+                            hm.get("total")[0] += Integer.parseInt(counts[0]);
+                            hm.get("total")[1] += Integer.parseInt(counts[1]);
                         }
-                    }
-                    catch (NumberFormatException nfe){
+                    } catch (NumberFormatException nfe) {
                         nfe.printStackTrace();
                     }
                 }
             }
-            System.out.println("good: " + (numGood-pg));
-            System.out.println("bad: " + (numBad-pb));
-            pg = numGood;
-            pb = numBad;
+            System.out.println("good: " + (hm.get("total")[0] - pg));
+            System.out.println("bad: " + (hm.get("total")[1] - pb));
+            pg = hm.get("total")[0];
+            pb = hm.get("total")[1];
+
         }
 
-        nums[0] = numGood;
-        nums[1] = numBad;
-
-        return nums;
+        return hm;
     }
 
 }

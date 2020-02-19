@@ -19,6 +19,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 
 import static query.Query.queryBatch;
@@ -151,12 +152,12 @@ public class QueryGUI {
 
         private void doQuery() {
             try {
-                int[] batchNums = queryBatch(beginKey, endKey, fs, conf);
-                int[] speedNums = querySpeed(beginKey, endKey, fs);
-                queryFrame.setNewData(batchNums[0], batchNums[1], speedNums[0], speedNums[1]);
-
-                System.out.println("Num good tweets between " + beginKey + " and " + endKey + " (included): " + (batchNums[0] + speedNums[0]) + " (" + batchNums[0] + " from batch, " + speedNums[0] + " from speed)");
-                System.out.println("Num bad tweets between " + beginKey + " and " + endKey + " (included): " + (batchNums[0] + speedNums[0]) + " (" + batchNums[1] + " from batch, " + speedNums[1] + " from speed)");
+                HashMap<String, int[]> batchNums = queryBatch(beginKey, endKey, fs, conf);
+                HashMap<String, int[]> speedNums = querySpeed(beginKey, endKey, fs);
+//                queryFrame.setNewData(batchNums[0], batchNums[1], speedNums[0], speedNums[1]);
+//
+//                System.out.println("Num good tweets between " + beginKey + " and " + endKey + " (included): " + (batchNums[0] + speedNums[0]) + " (" + batchNums[0] + " from batch, " + speedNums[0] + " from speed)");
+//                System.out.println("Num bad tweets between " + beginKey + " and " + endKey + " (included): " + (batchNums[0] + speedNums[0]) + " (" + batchNums[1] + " from batch, " + speedNums[1] + " from speed)");
                 System.out.println();
             }
             catch (IOException ioe){
