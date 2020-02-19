@@ -137,8 +137,6 @@ public class Query {
         if(!processedTimestamp.equals(inProgressTimestamp))
             timestamps.add(inProgressTimestamp);
 
-        int pg = 0, pb = 0;
-
         for(String timestamp: timestamps) {
             Path path = new Path(Globals.speedOutputPath + "/" + timestamp);
             if (!fs.exists(path))
@@ -150,6 +148,7 @@ public class Query {
                 LocatedFileStatus fileStatus = fileStatusListIterator.next();
                 String keyword = fileStatus.getPath().getName().replace(".txt", "");
                 String tweetDate = fileStatus.getPath().getParent().getName();
+                int good=0, bad=0;
                 if (beginDate.compareTo(tweetDate) <= 0 && tweetDate.compareTo(endDate) <= 0) {
                     FSDataInputStream in = fs.open(fileStatus.getPath());
                     String line = IOUtils.toString(in, "UTF-16");
@@ -157,8 +156,10 @@ public class Query {
                     try {
                         String counts[] = line.split(",");
                         if (!counts[0].equals("")) {
-                            hm.get(keyword)[0] += Integer.parseInt(counts[0]);
-                            hm.get(keyword)[1] += Integer.parseInt(counts[1]);
+                            good = Integer.parseInt(counts[0]);
+                            bad = Integer.parseInt(counts[1]);
+                            hm.get(keyword)[0] += good;
+                            hm.get(keyword)[1] += bad;
                         }
                     } catch (NumberFormatException nfe) {
                         nfe.printStackTrace();
@@ -166,10 +167,8 @@ public class Query {
                 }
 
                 System.out.println(keyword);
-                System.out.println("good: " + (hm.get(keyword)[0] - pg));
-                System.out.println("bad: " + (hm.get(keyword)[1] - pb));
-                pg = hm.get(keyword)[0];
-                pb = hm.get(keyword)[1];
+                System.out.println("good: " + good);
+                System.out.println("bad: " + bad);
             }
         }
 
