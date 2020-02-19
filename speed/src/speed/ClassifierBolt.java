@@ -33,6 +33,8 @@ class ClassifierBolt extends BaseBasicBolt {
     }
 
     public void execute(Tuple tuple, BasicOutputCollector collector) {
+        System.out.println("CLASSIFIER begins");
+        long start = System.currentTimeMillis();
 
         String[] values = tuple.getString(0).split(",", 2);
 
@@ -42,7 +44,7 @@ class ClassifierBolt extends BaseBasicBolt {
             System.err.println("Timestamp too short");
             return;
         }
-        String key = Globals.timestampToKey(tweetTimestamp);
+
 
         // classify tweet
         String tweet = values[1];
@@ -53,10 +55,28 @@ class ClassifierBolt extends BaseBasicBolt {
             sentiment = 4;
         }
 
+        String[] words = tweet.toLowerCase().split(" ");
+
+        for(String word: words) {
+
+            if(!Globals.keywords.contains(word)){
+                continue;
+            }
+
+            String key = Globals.timestampToKey(tweetTimestamp) + "/" + word;
+
+            // send result to CountBolt
+            collector.emit(new Values(key, sentiment, tweetTimestamp));
+
+//        System.out.println("BOLT CLASSIFIER timestamp cur: " + tweetTimestamp + ", key: "+ key + ", sentiment: " + sentiment);
+        }
+
+        String key = Globals.timestampToKey(tweetTimestamp) + "/total";
         // send result to CountBolt
         collector.emit(new Values(key, sentiment, tweetTimestamp));
 
-        System.out.println("BOLT CLASSIFIER timestamp cur: " + tweetTimestamp + ", key: "+ key + ", sentiment: " + sentiment);
+        long end = System.currentTimeMillis();
+        System.out.println("CLASSIFIER time: " + (end - start));
     }
 
 

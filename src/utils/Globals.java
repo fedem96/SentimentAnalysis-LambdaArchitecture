@@ -8,6 +8,8 @@ import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 public class Globals {
@@ -28,6 +30,8 @@ public class Globals {
     public static final String syncProcessedTimestamp = syncPath + "/processed_timestamp.txt";
     public static final String syncProgressTimestamp = syncPath + "/progress_timestamp.txt";
     public static final String syncLastBatchOutput = syncPath + "/last_batch_output.txt";
+
+    public static final ArrayList<String> keywords = new ArrayList<>(Arrays.asList("facebook", "apple", "google"));
 
     public static void writeStringToHdfsFile(FileSystem fs, String string, String filePath) throws IOException {
         FSDataOutputStream outputStream = fs.create(new Path(filePath));

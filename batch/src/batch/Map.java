@@ -31,28 +31,14 @@ public class Map extends Mapper<Object, Text, Text, IntWritable> {
             return;
         }
 
-        String outputKey = Globals.timestampToKey(tweetTimestamp);
-        // change timestamp format
-//        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
-//        SimpleDateFormat newDateFormat = new SimpleDateFormat(Globals.datePattern, Locale.ENGLISH);
-//
-//        try {
-//            timestamp = newDateFormat.format(dateFormat.parse(timestamp));
-//        } catch (ParseException e) {
-//            e.printStackTrace();
-//            return;
-//        }
-
         String tweet = values[1];
 
-        // args[*****]
         try {
             classifier = new Classifier("dataset/classifier_weights.lpc");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             return;
         }
-
         int sentiment;
         // System.out.println(classifier.evaluateTweet(tweet));
         if(classifier.evaluateTweet(tweet).equals("neg")){
@@ -61,7 +47,24 @@ public class Map extends Mapper<Object, Text, Text, IntWritable> {
             sentiment = 4;
         }
 
+
+        String[] words = tweet.toLowerCase().split(" ");
+        String outputKey;
+
+        for(String word: words) {
+
+            if (!Globals.keywords.contains(word)) {
+                continue;
+            }
+
+            outputKey = Globals.timestampToKey(tweetTimestamp) + "/" + word;
+
+            context.write(new Text(outputKey), new IntWritable(sentiment));
+        }
+
+        outputKey = Globals.timestampToKey(tweetTimestamp) + "/total";
         context.write(new Text(outputKey), new IntWritable(sentiment));
+
 
     }
 

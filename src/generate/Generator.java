@@ -67,8 +67,6 @@ public class Generator extends Thread{
             return;
         }
 
-        //INIZIALIZATION Script
-
         // create configuration
         Configuration conf = new Configuration();
         conf.set("fs.defaultFS", Globals.hdfsURI);

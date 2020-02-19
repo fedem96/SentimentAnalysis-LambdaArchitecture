@@ -26,7 +26,7 @@ public class BatchLayer extends Job {
         this.setMapOutputValueClass(IntWritable.class);  // sentiment
 
         this.setOutputKeyClass(Text.class);              // timestamp
-        this.setOutputValueClass(Text.class);         // <numGoodSentiments, numBadSentiments>
+        this.setOutputValueClass(Text.class);         // numGoodSentiments, numBadSentiments
 
         FileInputFormat.addInputPath(this, new Path(batchInputPath));
         FileOutputFormat.setOutputPath(this, new Path(batchOutputPath));
@@ -39,11 +39,19 @@ public class BatchLayer extends Job {
         Configuration conf = new Configuration();
         conf.set("fs.defaultFS", Globals.hdfsURI);
 
+        FileSystem fs = FileSystem.get(conf);
         int outputIndex = 0;
 
-        String ts = null;
+        try {
+            if (Globals.batchOutputPaths[outputIndex].equals(Globals.readStringFromHdfsFile(fs, Globals.syncLastBatchOutput)))
+                outputIndex++;
+        }
+        catch (IOException ioe){}
+        fs.close();
+        String ts;
         while (true) {
-            FileSystem fs = FileSystem.get(conf);
+            fs = FileSystem.get(conf);
+
             // select output path
             String outputPath = Globals.batchOutputPaths[outputIndex];
             outputIndex = (outputIndex + 1) % Globals.batchOutputPaths.length;
