@@ -9,7 +9,7 @@ import java.io.*;
 public class Classifier {
 
      // maxCharNGram param for train the network
-     private int maxCharNGram = 4;
+     private int maxCharNGram = 2;
      private DynamicLMClassifier<NGramProcessLM> trainedClassifier;
      private LMClassifier<NGramProcessLM, MultivariateEstimator> mClassifier;
 
