@@ -7,6 +7,7 @@ import utils.Globals;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -66,6 +67,10 @@ public class Generator extends Thread{
             System.err.println("Error while reading CSV input file");
             return;
         }
+        // shuffle tweets
+        System.out.println("Shuffle dataset");
+        Collections.shuffle(lines);
+        //INIZIALIZATION Script
 
         // create configuration
         Configuration conf = new Configuration();
