@@ -8,6 +8,8 @@ import java.io.*;
 
 public class Classifier {
 
+     // maxCharNGram param for train the network
+     private int maxCharNGram = 4;
      private DynamicLMClassifier<NGramProcessLM> trainedClassifier;
      private LMClassifier<NGramProcessLM, MultivariateEstimator> mClassifier;
 
@@ -28,7 +30,7 @@ public class Classifier {
     public void train(String datasetPath) throws IOException {
         //define params for classification
         String[] mCategories = {"neg","pos"};
-        trainedClassifier = DynamicLMClassifier.createNGramProcess(mCategories,2);
+        trainedClassifier = DynamicLMClassifier.createNGramProcess(mCategories,maxCharNGram);
         System.out.println("\nTraining.");
 
         FileReader fileReader = new FileReader(datasetPath);
@@ -119,7 +121,7 @@ public class Classifier {
             classifier = new Classifier();
             classifier.train(args[0]);
             classifier.save(args[1]);
-            return; // TODO remove this return
+            return;
         }
         else
         {   // load the classifier
@@ -134,12 +136,11 @@ public class Classifier {
         System.out.println(text);
         System.out.println(classifier.evaluateTweet(text));
 
-        //TODO why this is neg ?!?!?!
         text = "I am sad!!!! lol hahahaha ";
         System.out.println(text);
         System.out.println(classifier.evaluateTweet(text));
 
-        text = "I am so sad.";
+        text = "I am so happy";
         System.out.println(text);
         System.out.println(classifier.evaluateTweet(text));
     }

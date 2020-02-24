@@ -22,7 +22,6 @@ public class Reduce extends Reducer<Text, IntWritable, Text, Text> {
                 numBadSentiments++;
             total++;
         }
-//        context.write(key, new IntPair(numGoodSentiments, numBadSentiments));
         context.write(key, new Text(numGoodSentiments + "," + numBadSentiments));
         System.out.println("Reduce: key="+key+", good:"+numGoodSentiments+", bad:"+numBadSentiments+", total:" + total);
     }

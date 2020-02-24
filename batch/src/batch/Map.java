@@ -9,8 +9,6 @@ import utils.Globals;
 
 import java.io.IOException;
 
-
-//TODO see how use hbase ?!
 public class Map extends Mapper<Object, Text, Text, IntWritable> {
 
     private Classifier classifier;
