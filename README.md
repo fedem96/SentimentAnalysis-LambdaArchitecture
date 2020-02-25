@@ -2,7 +2,9 @@
 ...
 
 ## Software requirements
-* Java JDK
-* Hadoop 2.9.2
-
-...
+* Java JDK: open jdk 11
+* Apache Hadoop 2.9.2
+* Apache Storm 2.1.0
+* HdsfSpout Apache Storm 2.1.0
+* LingPipe 4.1.2
+* jfreechart 1.0.1
