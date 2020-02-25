@@ -23,7 +23,7 @@ public class Generator extends Thread{
     private Sender toSpeedSender;
 
 
-    // HYPERPARAMETERS FOR SIMULATE FILE DIM
+    // PARAMETERS
     // deltaTime: milliseconds
     static int maxDeltaTimeBatch = 10 * 60 * 1000;
     static int maxDeltaTimeSpeed = 5 * 1024;

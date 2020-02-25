@@ -18,6 +18,7 @@ This architecture allows to harness the full power of a computer cluster for dat
 ## Dataset
 Sentiment140, 1.6 million tweets with annotated sentiment: [download](https://www.kaggle.com/kazanova/sentiment140)
 
+## Usage
 ### Download this repo
 * `git clone https://github.com/fedem96/SentimentAnalysis-LambdaArchitecture.git`
 
@@ -31,3 +32,7 @@ Import all jar/libraries in your project and test Hadoop configuration.
 * `Speed Layer` no parameters need in args. Run after Generator
 * `Query Gui` no parameters in args. Run after Batch and Speed layer
 * `Clear` no parameters need in args. Used to clear all the directories in the HDFS before running a new simulation
+
+
+## Graphical User Interface
+![alt text](img/gui.png)
