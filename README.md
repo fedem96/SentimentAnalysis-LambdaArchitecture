@@ -11,3 +11,6 @@
 
 ## Dataset
 Sentiment140 1.6 million annotated sentiment tweets : [download](https://www.kaggle.com/kazanova/sentiment140)
+
+### Download this repo
+* `git clone https://github.com/fedem96/SentimentAnalysis-LambdaArchitecture.git`
