@@ -19,6 +19,9 @@ Sentiment140 1.6 million annotated sentiment tweets : [download](https://www.kag
 * `git clone https://github.com/fedem96/SentimentAnalysis-LambdaArchitecture.git`
 
 ### Run all the process
+Previus import alla jar/library file in your project and test Hadoop configuration.
+[Set up a single node cluster guide Hadoop](https://hadoop.apache.org/docs/r2.9.2/hadoop-project-dist/hadoop-common/SingleCluster.html)
+
 * `Classifier` edit configuration and set args[0] = dataset file and args[1] = path/file in which save the classifier
 * `Generator` edit configuration and set args[0] = dataset file for generate tweet on hdfs
 * `Batch Layer` no parameters need in args
