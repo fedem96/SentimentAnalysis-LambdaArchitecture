@@ -8,3 +8,6 @@
 * HdsfSpout Apache Storm 2.1.0
 * LingPipe 4.1.2
 * jfreechart 1.0.1
+
+## Dataset
+Sentiment140 1.6 million annotated sentiment tweets : [download](https://www.kaggle.com/kazanova/sentiment140)
