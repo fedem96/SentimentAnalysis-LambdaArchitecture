@@ -1,6 +1,6 @@
 # Sentiment Analysis
 
-![alt text](https://raw.githubusercontent.com/fedem96/SentimentAnalysis-LambdaArchitecture/blob/master/img/architecture.png)
+![alt text](https://github.com/fedem96/SentimentAnalysis-LambdaArchitecture/blob/master/img/architecture.png)
 
 Calculating arbitrary functions on large real-time data sets is a difficult task. In this study a possible approach to problems of this type is shown: as an example task we consider the analysis of the feelings of the tweets. Instead of getting tweets through the Twitter API, we simulate issuing them by reading them from the sentiment140 dataset.
 In our scenario we create a Lambda Architecture that uses Apache Hadoop for the Batch Layer, Apache Storm for the Speed
